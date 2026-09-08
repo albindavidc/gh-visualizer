@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { THEMES } from '../themes';
 
 interface SpaceShooterProps {
   data: {
@@ -8,27 +9,14 @@ interface SpaceShooterProps {
     }[];
   };
   strategy: string;
+  theme?: string;
 }
 
 const NUM_WEEKS = 52;
 const NUM_DAYS = 7;
 const SHIP_POSITION_Y = NUM_DAYS + 3;
 
-// Theme colors matching original Python code
-const THEME = {
-  bg: '#0d1117',
-  ship: '#c9d1d9',
-  bullet: '#f85149',
-  levels: [
-    '#21262d', // Level 0 (Empty)
-    '#0e4429', // Level 1
-    '#006d32', // Level 2
-    '#26a641', // Level 3
-    '#39d353', // Level 4
-  ],
-};
-
-export function SpaceShooter({ data, strategy }: SpaceShooterProps) {
+export function SpaceShooter({ data, strategy, theme = 'github' }: SpaceShooterProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -36,6 +24,12 @@ export function SpaceShooter({ data, strategy }: SpaceShooterProps) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    const currentTheme = {
+      ...THEMES[theme] || THEMES.github,
+      ship: '#c9d1d9',
+      bullet: '#f85149',
+    };
 
     // Fixed internal resolution
     const width = 860;
@@ -200,7 +194,7 @@ export function SpaceShooter({ data, strategy }: SpaceShooterProps) {
 
     const draw = () => {
       // Clear background
-      ctx.fillStyle = THEME.bg;
+      ctx.fillStyle = currentTheme.bg;
       ctx.fillRect(0, 0, width, height);
 
       // Helper to get pixel coordinates
@@ -223,7 +217,7 @@ export function SpaceShooter({ data, strategy }: SpaceShooterProps) {
       for (let x = 0; x < NUM_WEEKS; x++) {
         for (let y = 0; y < NUM_DAYS; y++) {
           const pos = getCoords(x, y);
-          ctx.fillStyle = THEME.levels[0];
+          ctx.fillStyle = currentTheme.levels[0];
           ctx.fillRect(pos.x, pos.y, cellSize, cellSize);
         }
       }
@@ -231,7 +225,7 @@ export function SpaceShooter({ data, strategy }: SpaceShooterProps) {
       // Draw Enemies
       for (const e of enemies) {
         const pos = getCoords(e.x, e.y);
-        ctx.fillStyle = THEME.levels[e.level] || THEME.levels[4];
+        ctx.fillStyle = currentTheme.levels[e.level] || currentTheme.levels[4];
         ctx.fillRect(pos.x, pos.y, cellSize, cellSize);
       }
 
@@ -251,7 +245,7 @@ export function SpaceShooter({ data, strategy }: SpaceShooterProps) {
       }
 
       // Draw Bullets
-      ctx.fillStyle = THEME.bullet;
+      ctx.fillStyle = currentTheme.bullet;
       for (const b of bullets) {
         const pos = getCoords(b.x, b.y);
         const center = { x: pos.x + cellSize / 2, y: pos.y + cellSize / 2 };
@@ -264,7 +258,7 @@ export function SpaceShooter({ data, strategy }: SpaceShooterProps) {
         ctx.fillRect(center.x - 1, center.y + 6, 2, 4);
         ctx.fillStyle = `rgba(248, 81, 73, 0.2)`;
         ctx.fillRect(center.x - 1, center.y + 12, 2, 3);
-        ctx.fillStyle = THEME.bullet; // reset for next bullet
+        ctx.fillStyle = currentTheme.bullet; // reset for next bullet
       }
 
       // Draw Ship

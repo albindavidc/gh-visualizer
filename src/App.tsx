@@ -2,10 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { SpaceShooter } from './components/SpaceShooter';
 import { ContributionGraph } from './components/ContributionGraph';
 import { Github, Play, Loader2, LayoutGrid, Gamepad2, Check, Code } from 'lucide-react';
+import { THEMES } from './themes';
 
 export default function App() {
   const [username, setUsername] = useState('');
   const [strategy, setStrategy] = useState('random');
+  const [theme, setTheme] = useState('github');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [githubData, setGithubData] = useState<any>(null);
@@ -21,6 +23,10 @@ export default function App() {
     if (mode === 'shooter' || mode === 'classic') {
       setViewMode(mode);
     }
+    const urlTheme = params.get('theme');
+    if (urlTheme && THEMES[urlTheme]) {
+      setTheme(urlTheme);
+    }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,7 +36,7 @@ export default function App() {
     setGithubData(null);
     
     // Update URL for sharing
-    window.history.pushState({}, '', `?username=${encodeURIComponent(username)}&mode=${viewMode}`);
+    window.history.pushState({}, '', `?username=${encodeURIComponent(username)}&mode=${viewMode}&theme=${theme}`);
 
     try {
       const res = await fetch(`/api/github?username=${encodeURIComponent(username)}`);
@@ -60,8 +66,8 @@ export default function App() {
     
     // Using the official Vercel domain for embeds
     const baseUrl = 'https://gh-contribution-graph.vercel.app';
-    const embedUrl = `${baseUrl}/api/graph?username=${encodeURIComponent(githubData.username)}`;
-    const linkUrl = `${baseUrl}/?username=${encodeURIComponent(githubData.username)}`;
+    const embedUrl = `${baseUrl}/api/graph?username=${encodeURIComponent(githubData.username)}&theme=${theme}`;
+    const linkUrl = `${baseUrl}/?username=${encodeURIComponent(githubData.username)}&theme=${theme}`;
     const markdown = `[![GitHub Contributions](${embedUrl})](${linkUrl})`;
     
     try {
@@ -90,7 +96,7 @@ export default function App() {
 
         <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-2xl p-6 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-300">
                   GitHub Username
@@ -111,10 +117,27 @@ export default function App() {
                   />
                 </div>
               </div>
+
+              <div>
+                <label htmlFor="theme" className="block text-sm font-medium text-gray-300">
+                  Color Theme
+                </label>
+                <select
+                  id="theme"
+                  name="theme"
+                  className="mt-2 block w-full pl-3 pr-10 py-3 text-base border-gray-700 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md bg-gray-800 text-white capitalize"
+                  value={theme}
+                  onChange={(e) => setTheme(e.target.value)}
+                >
+                  {Object.keys(THEMES).map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
               
               <div>
                 <label htmlFor="strategy" className="block text-sm font-medium text-gray-300">
-                  Attack Strategy (Shooter Mode)
+                  Attack Strategy
                 </label>
                 <select
                   id="strategy"
@@ -224,9 +247,9 @@ export default function App() {
               className="w-full bg-black rounded-lg border border-gray-800 relative shadow-inner overflow-hidden aspect-[86/23] flex items-center justify-center"
             >
               {viewMode === 'shooter' ? (
-                <SpaceShooter data={githubData} strategy={strategy} />
+                <SpaceShooter data={githubData} strategy={strategy} theme={theme} />
               ) : (
-                <ContributionGraph data={githubData} />
+                <ContributionGraph data={githubData} theme={theme} />
               )}
             </div>
             

@@ -1,10 +1,19 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const NUM_WEEKS = 52;
-const THEME = ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'];
+const THEMES: Record<string, { bg: string, levels: string[] }> = {
+  github: { bg: '#0d1117', levels: ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'] },
+  sleek: { bg: '#0A0A0A', levels: ['#161b22', '#3f6212', '#65a30d', '#84cc16', '#a3e635'] },
+  dracula: { bg: '#282a36', levels: ['#44475a', '#6272a4', '#8be9fd', '#bd93f9', '#ff79c6'] },
+  ocean: { bg: '#0A0A0A', levels: ['#161b22', '#0c2d48', '#145da0', '#2e8bc0', '#b1d4e0'] },
+  amber: { bg: '#0A0A0A', levels: ['#161b22', '#78350f', '#b45309', '#f59e0b', '#fcd34d'] },
+};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const username = req.query.username as string;
+  const themeName = (req.query.theme as string) || 'github';
+  const theme = THEMES[themeName] || THEMES.github;
+
   if (!username) {
     return res.status(400).send("Username is required");
   }
@@ -65,14 +74,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const height = padding * 2 + (7 * cellSize) + (6 * gap);
 
     let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-  <rect width="100%" height="100%" fill="#0A0A0A" rx="8" />
+  <rect width="100%" height="100%" fill="${theme.bg}" rx="8" />
   <g transform="translate(${padding}, ${padding})">`;
 
     weeks.forEach((week: any, weekIndex: number) => {
       week.contributionDays.forEach((day: any) => {
         const levelMap: any = { NONE: 0, FIRST_QUARTILE: 1, SECOND_QUARTILE: 2, THIRD_QUARTILE: 3, FOURTH_QUARTILE: 4 };
         const level = levelMap[day.contributionLevel] || 0;
-        const color = THEME[level];
+        const color = theme.levels[level];
         const x = weekIndex * (cellSize + gap);
         const y = day.weekday * (cellSize + gap); // 0 = Sunday, 6 = Saturday
         svg += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" fill="${color}" rx="2" />`;
@@ -82,7 +91,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     svg += `</g></svg>`;
 
     res.setHeader('Content-Type', 'image/svg+xml');
-    res.setHeader('Cache-Control', 'public, max-age=7200'); // Cache for 2 hours
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate'); // Ensure real-time updates
     res.status(200).send(svg);
   } catch (err: any) {
     res.status(500).send(err.message || "Internal Server Error");

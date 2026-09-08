@@ -1,4 +1,5 @@
 import React from 'react';
+import { THEMES } from '../themes';
 
 interface ContributionGraphProps {
   data: {
@@ -7,25 +8,17 @@ interface ContributionGraphProps {
       days: { count: number; level: number; date: string }[];
     }[];
   };
+  theme?: string;
 }
 
-const THEME = {
-  bg: '#0A0A0A', // the requested color
-  levels: [
-    '#161b22', // Level 0 (Empty)
-    '#0e4429', // Level 1
-    '#006d32', // Level 2
-    '#26a641', // Level 3
-    '#39d353', // Level 4
-  ],
-};
-
-export function ContributionGraph({ data }: ContributionGraphProps) {
+export function ContributionGraph({ data, theme = 'github' }: ContributionGraphProps) {
+  const currentTheme = THEMES[theme] || THEMES.github;
+  
   // We expect up to 52 weeks, 7 days a week.
   return (
     <div 
       className="w-full flex items-center justify-center p-6 rounded-lg"
-      style={{ backgroundColor: THEME.bg }}
+      style={{ backgroundColor: currentTheme.bg }}
     >
       <div className="flex gap-[3px] overflow-x-auto pb-2">
         {data.weeks.map((week, weekIndex) => (
@@ -38,7 +31,7 @@ export function ContributionGraph({ data }: ContributionGraphProps) {
                 key={dayIndex}
                 title={`${day.count} contributions on ${day.date || 'unknown'}`}
                 className="w-[12px] h-[12px] rounded-sm transition-opacity hover:opacity-80"
-                style={{ backgroundColor: THEME.levels[day.level] || THEME.levels[4] }}
+                style={{ backgroundColor: currentTheme.levels[day.level] || currentTheme.levels[4] }}
               />
             ))}
           </div>
