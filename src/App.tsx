@@ -18,9 +18,16 @@ export default function App() {
     setGithubData(null);
 
     try {
-      const res = await fetch(`/api/github/${encodeURIComponent(username)}`);
-      const data = await res.json();
+      const res = await fetch(`/api/github?username=${encodeURIComponent(username)}`);
       
+      let data;
+      const textResponse = await res.text();
+      try {
+        data = JSON.parse(textResponse);
+      } catch (e) {
+        throw new Error('Received an invalid response from the server. Ensure the server is running correctly and the API route is accessible.');
+      }
+
       if (!res.ok) {
         throw new Error(data.error || 'Failed to fetch data');
       }

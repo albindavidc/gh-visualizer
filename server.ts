@@ -8,8 +8,11 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  app.get("/api/github/:username", async (req, res) => {
-    const { username } = req.params;
+  app.get("/api/github", async (req, res) => {
+    const username = req.query.username as string;
+    if (!username) {
+      return res.status(400).json({ error: "Username is required" });
+    }
     const token = process.env.GH_TOKEN;
     if (!token) {
       return res.status(500).json({ error: "GitHub token not configured" });
