@@ -270,16 +270,50 @@ export function SpaceShooter({ data, strategy }: SpaceShooterProps) {
       // Draw Ship
       const shipPos = getCoords(ship.x, ship.y);
       const cx = shipPos.x + cellSize / 2;
-      const cy = shipPos.y;
-      const shipW = 8;
+      const cy = shipPos.y + cellSize / 2;
       
-      ctx.fillStyle = THEME.ship;
-      // Center hull
-      ctx.fillRect(cx - 1, cy, 2, cellSize);
-      // Left wing
-      ctx.fillRect(cx - shipW, cy + cellSize * 0.5, shipW - 1, cellSize * 0.5);
-      // Right wing
-      ctx.fillRect(cx + 2, cy + cellSize * 0.5, shipW - 1, cellSize * 0.5);
+      // Engine Glow / Thruster
+      ctx.fillStyle = '#f59e0b'; // amber-500
+      ctx.beginPath();
+      ctx.moveTo(cx - 3, cy + 6);
+      ctx.lineTo(cx + 3, cy + 6);
+      ctx.lineTo(cx, cy + 12 + Math.random() * 6); // flickering engine trail
+      ctx.fill();
+
+      // Main Hull
+      ctx.fillStyle = '#e2e8f0'; // slate-200
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - 10); // Nose
+      ctx.lineTo(cx + 8, cy + 6); // Right wing tip
+      ctx.lineTo(cx + 4, cy + 4); // Right inner
+      ctx.lineTo(cx, cy + 8); // Bottom center
+      ctx.lineTo(cx - 4, cy + 4); // Left inner
+      ctx.lineTo(cx - 8, cy + 6); // Left wing tip
+      ctx.closePath();
+      ctx.fill();
+
+      // Cockpit Window
+      ctx.fillStyle = '#38bdf8'; // sky-400
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - 2);
+      ctx.lineTo(cx + 2, cy + 3);
+      ctx.lineTo(cx - 2, cy + 3);
+      ctx.closePath();
+      ctx.fill();
+
+      // Wing Accents
+      ctx.fillStyle = '#ef4444'; // red-500
+      ctx.beginPath();
+      ctx.moveTo(cx - 7, cy + 5);
+      ctx.lineTo(cx - 5, cy + 1);
+      ctx.lineTo(cx - 4, cy + 4);
+      ctx.fill();
+      
+      ctx.beginPath();
+      ctx.moveTo(cx + 7, cy + 5);
+      ctx.lineTo(cx + 5, cy + 1);
+      ctx.lineTo(cx + 4, cy + 4);
+      ctx.fill();
     };
 
     animationFrameId = requestAnimationFrame(loop);
