@@ -77,7 +77,7 @@ export default function App() {
     const baseUrl = 'https://gh-visualizer.vercel.app';
     const embedUrl = `${baseUrl}/api/graph?username=${encodeURIComponent(githubData.username)}&theme=${theme}&font=${font}&hide_border=${hideBorder}&hide_languages=${hideLanguages}`;
     const linkUrl = `${baseUrl}/?username=${encodeURIComponent(githubData.username)}&theme=${theme}&font=${font}&hide_border=${hideBorder}&hide_languages=${hideLanguages}`;
-    const markdown = `[![GitHub Contributions](${embedUrl})](${linkUrl})`;
+    const markdown = `![GitHub Contributions](${embedUrl})`;
     
     try {
       await navigator.clipboard.writeText(markdown);

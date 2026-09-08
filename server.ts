@@ -251,7 +251,7 @@ async function startServer() {
       const svg = generateSvg(username, calendar.totalContributions, weeks, themeName, topLanguages, fontName, hideBorder, hideLanguages);
 
       res.setHeader('Content-Type', 'image/svg+xml');
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0');
       res.status(200).send(svg);
     } catch (err: any) {
       res.status(500).send(err.message || "Internal Server Error");
