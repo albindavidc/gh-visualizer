@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SpaceShooter } from './components/SpaceShooter';
-import { Github, Play, Loader2 } from 'lucide-react';
+import { ContributionGraph } from './components/ContributionGraph';
+import { Github, Play, Loader2, LayoutGrid, Gamepad2 } from 'lucide-react';
 
 export default function App() {
   const [username, setUsername] = useState('zane-chen');
@@ -8,6 +9,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [githubData, setGithubData] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<'shooter' | 'classic'>('classic');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,10 +41,10 @@ export default function App() {
             <Github size={48} />
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight text-white">
-            GitHub Space Shooter
+            GitHub Visualizer
           </h1>
           <p className="mt-2 text-lg text-gray-400">
-            Transform your contribution graph into a retro arcade shooter.
+            View your contribution graph or transform it into a retro arcade shooter.
           </p>
         </div>
 
@@ -72,7 +74,7 @@ export default function App() {
               
               <div>
                 <label htmlFor="strategy" className="block text-sm font-medium text-gray-300">
-                  Attack Strategy
+                  Attack Strategy (Shooter Mode)
                 </label>
                 <select
                   id="strategy"
@@ -99,7 +101,7 @@ export default function App() {
                 ) : (
                   <Play className="-ml-1 mr-2 h-5 w-5" fill="currentColor" />
                 )}
-                {loading ? 'Charging Lasers...' : 'Generate Simulation'}
+                {loading ? 'Fetching...' : 'Generate Visualization'}
               </button>
             </div>
           </form>
@@ -125,19 +127,52 @@ export default function App() {
 
         {githubData && (
           <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-2xl p-6 sm:p-8 overflow-hidden">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-white">Target Acquired: {githubData.username}</h2>
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-900/50 text-emerald-400 border border-emerald-800/50">
-                {githubData.total_contributions} Contributions
-              </span>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-white">Target Acquired: {githubData.username}</h2>
+                <span className="inline-flex items-center px-3 py-1 mt-2 rounded-full text-sm font-medium bg-emerald-900/50 text-emerald-400 border border-emerald-800/50">
+                  {githubData.total_contributions} Contributions
+                </span>
+              </div>
+              
+              <div className="flex bg-gray-800 p-1 rounded-lg border border-gray-700">
+                <button
+                  onClick={() => setViewMode('classic')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    viewMode === 'classic' 
+                      ? 'bg-gray-700 text-white shadow-sm' 
+                      : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50'
+                  }`}
+                >
+                  <LayoutGrid size={16} />
+                  Classic Graph
+                </button>
+                <button
+                  onClick={() => setViewMode('shooter')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    viewMode === 'shooter' 
+                      ? 'bg-gray-700 text-white shadow-sm' 
+                      : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50'
+                  }`}
+                >
+                  <Gamepad2 size={16} />
+                  Space Shooter
+                </button>
+              </div>
             </div>
             
-            <div className="w-full bg-black rounded-lg border border-gray-800 relative shadow-inner overflow-hidden aspect-[86/23]">
-              <SpaceShooter data={githubData} strategy={strategy} />
+            <div className="w-full bg-black rounded-lg border border-gray-800 relative shadow-inner overflow-hidden aspect-[86/23] flex items-center justify-center">
+              {viewMode === 'shooter' ? (
+                <SpaceShooter data={githubData} strategy={strategy} />
+              ) : (
+                <ContributionGraph data={githubData} />
+              )}
             </div>
             
             <p className="mt-4 text-sm text-gray-500 text-center">
-              Simulation running natively in your browser using HTML5 Canvas.
+              {viewMode === 'shooter' 
+                ? 'Simulation running natively in your browser using HTML5 Canvas.' 
+                : 'A clean, modern view of your GitHub contributions.'}
             </p>
           </div>
         )}

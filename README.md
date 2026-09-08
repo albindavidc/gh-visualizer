@@ -1,8 +1,13 @@
-# gh-space-shooter 🚀
+# GitHub Visualizer 🚀
 
-Transform your GitHub contribution graph into an epic space shooter game! 
+Transform your GitHub contribution graph into an epic space shooter game, or view it as a classic visualization! 
 
 ![Example Game](example.gif)
+
+## Features
+
+- **Space Shooter Mode**: Turn your coding history into an interactive Galaga-style shooter. Enemies spawn based on your contributions!
+- **Classic Graph Mode**: A sleek, modern `#0A0A0A` dark-themed view of your classic GitHub contribution graph.
 
 ## Usage
 
