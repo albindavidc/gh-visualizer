@@ -27,8 +27,22 @@ async function startServer() {
               weeks {
                 contributionDays {
                   date
+                  weekday
                   contributionCount
                   contributionLevel
+                }
+              }
+            }
+          }
+          repositories(ownerAffiliations: OWNER, isFork: false, first: 100, orderBy: {field: PUSHED_AT, direction: DESC}) {
+            nodes {
+              languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
+                edges {
+                  size
+                  node {
+                    name
+                    color
+                  }
                 }
               }
             }
@@ -61,10 +75,36 @@ async function startServer() {
       }
 
       const calendar = data.data.user.contributionsCollection.contributionCalendar;
+      
+      const languages: Record<string, { size: number, color: string }> = {};
+      const repos = data.data.user.repositories?.nodes || [];
+      let totalSize = 0;
+      repos.forEach((repo: any) => {
+        if (repo.languages && repo.languages.edges) {
+          repo.languages.edges.forEach((edge: any) => {
+             const size = edge.size;
+             const { name, color } = edge.node;
+             if (!languages[name]) languages[name] = { size: 0, color };
+             languages[name].size += size;
+             totalSize += size;
+          });
+        }
+      });
+      
+      const topLanguages = Object.entries(languages)
+        .map(([name, info]) => ({
+           name,
+           color: info.color,
+           percent: totalSize > 0 ? (info.size / totalSize) * 100 : 0
+        }))
+        .sort((a, b) => b.percent - a.percent)
+        .slice(0, 6);
+
       let weeks = calendar.weeks.map((weekData: any) => {
         return {
           days: weekData.contributionDays.map((dayData: any) => ({
             date: dayData.date,
+            weekday: dayData.weekday,
             count: dayData.contributionCount,
             level: {
               NONE: 0,
@@ -85,6 +125,7 @@ async function startServer() {
         username,
         total_contributions: calendar.totalContributions,
         weeks,
+        topLanguages,
       });
     } catch (err: any) {
       res.status(400).json({ error: err.message || "Failed to fetch data from GitHub" });
@@ -94,16 +135,8 @@ async function startServer() {
   app.get("/api/graph", async (req, res) => {
     const username = req.query.username as string;
     const themeName = (req.query.theme as string) || 'github';
-    
-    const THEMES: Record<string, { bg: string, levels: string[] }> = {
-      github: { bg: '#0d1117', levels: ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'] },
-      sleek: { bg: '#0A0A0A', levels: ['#161b22', '#3f6212', '#65a30d', '#84cc16', '#a3e635'] },
-      dracula: { bg: '#282a36', levels: ['#44475a', '#6272a4', '#8be9fd', '#bd93f9', '#ff79c6'] },
-      ocean: { bg: '#0A0A0A', levels: ['#161b22', '#0c2d48', '#145da0', '#2e8bc0', '#b1d4e0'] },
-      amber: { bg: '#0A0A0A', levels: ['#161b22', '#78350f', '#b45309', '#f59e0b', '#fcd34d'] },
-    };
-    
-    const theme = THEMES[themeName] || THEMES.github;
+    const fontName = (req.query.font as string) || 'inter';
+    const hideBorder = req.query.hide_border === 'true';
 
     if (!username) {
       return res.status(400).send("Username is required");
@@ -119,10 +152,26 @@ async function startServer() {
         user(login: $username) {
           contributionsCollection {
             contributionCalendar {
+              totalContributions
               weeks {
                 contributionDays {
+                  date
                   weekday
+                  contributionCount
                   contributionLevel
+                }
+              }
+            }
+          }
+          repositories(ownerAffiliations: OWNER, isFork: false, first: 100, orderBy: {field: PUSHED_AT, direction: DESC}) {
+            nodes {
+              languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
+                edges {
+                  size
+                  node {
+                    name
+                    color
+                  }
                 }
               }
             }
@@ -151,34 +200,54 @@ async function startServer() {
       }
 
       const calendar = data.data.user.contributionsCollection.contributionCalendar;
-      let weeks = calendar.weeks;
+      
+      const languages: Record<string, { size: number, color: string }> = {};
+      const repos = data.data.user.repositories?.nodes || [];
+      let totalSize = 0;
+      repos.forEach((repo: any) => {
+        if (repo.languages && repo.languages.edges) {
+          repo.languages.edges.forEach((edge: any) => {
+             const size = edge.size;
+             const { name, color } = edge.node;
+             if (!languages[name]) languages[name] = { size: 0, color };
+             languages[name].size += size;
+             totalSize += size;
+          });
+        }
+      });
+      
+      const topLanguages = Object.entries(languages)
+        .map(([name, info]) => ({
+           name,
+           color: info.color,
+           percent: totalSize > 0 ? (info.size / totalSize) * 100 : 0
+        }))
+        .sort((a, b) => b.percent - a.percent)
+        .slice(0, 6);
+
+      let weeks = calendar.weeks.map((weekData: any) => {
+        return {
+          days: weekData.contributionDays.map((dayData: any) => ({
+            date: dayData.date,
+            weekday: dayData.weekday,
+            count: dayData.contributionCount,
+            level: {
+              NONE: 0,
+              FIRST_QUARTILE: 1,
+              SECOND_QUARTILE: 2,
+              THIRD_QUARTILE: 3,
+              FOURTH_QUARTILE: 4,
+            }[dayData.contributionLevel] || 0,
+          })),
+        };
+      });
+
       if (weeks.length > NUM_WEEKS) {
         weeks = weeks.slice(-NUM_WEEKS);
       }
 
-      const cellSize = 12;
-      const gap = 3;
-      const padding = 16;
-      
-      const width = padding * 2 + (weeks.length * cellSize) + ((weeks.length - 1) * gap);
-      const height = padding * 2 + (7 * cellSize) + (6 * gap);
-
-      let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-    <rect width="100%" height="100%" fill="${theme.bg}" rx="8" />
-    <g transform="translate(${padding}, ${padding})">`;
-
-      weeks.forEach((week: any, weekIndex: number) => {
-        week.contributionDays.forEach((day: any) => {
-          const levelMap: any = { NONE: 0, FIRST_QUARTILE: 1, SECOND_QUARTILE: 2, THIRD_QUARTILE: 3, FOURTH_QUARTILE: 4 };
-          const level = levelMap[day.contributionLevel] || 0;
-          const color = theme.levels[level];
-          const x = weekIndex * (cellSize + gap);
-          const y = day.weekday * (cellSize + gap);
-          svg += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" fill="${color}" rx="2" />`;
-        });
-      });
-
-      svg += `</g></svg>`;
+      const { generateSvg } = await import('./src/utils/svgGenerator.js');
+      const svg = generateSvg(username, calendar.totalContributions, weeks, themeName, topLanguages, fontName, hideBorder);
 
       res.setHeader('Content-Type', 'image/svg+xml');
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');

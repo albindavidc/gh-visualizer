@@ -8,6 +8,8 @@ export default function App() {
   const [username, setUsername] = useState('');
   const [strategy, setStrategy] = useState('random');
   const [theme, setTheme] = useState('github');
+  const [font, setFont] = useState('inter');
+  const [hideBorder, setHideBorder] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [githubData, setGithubData] = useState<any>(null);
@@ -23,6 +25,10 @@ export default function App() {
     if (mode === 'shooter' || mode === 'classic') {
       setViewMode(mode);
     }
+    const urlFont = params.get('font');
+    if (urlFont) setFont(urlFont);
+    const urlHideBorder = params.get('hide_border') === 'true';
+    if (urlHideBorder) setHideBorder(true);
     const urlTheme = params.get('theme');
     if (urlTheme && THEMES[urlTheme]) {
       setTheme(urlTheme);
@@ -36,7 +42,7 @@ export default function App() {
     setGithubData(null);
     
     // Update URL for sharing
-    window.history.pushState({}, '', `?username=${encodeURIComponent(username)}&mode=${viewMode}&theme=${theme}`);
+    window.history.pushState({}, '', `?username=${encodeURIComponent(username)}&mode=${viewMode}&theme=${theme}&font=${font}&hide_border=${hideBorder}`);
 
     try {
       const res = await fetch(`/api/github?username=${encodeURIComponent(username)}`);
@@ -65,9 +71,9 @@ export default function App() {
     if (!githubData?.username) return;
     
     // Using the official Vercel domain for embeds
-    const baseUrl = 'https://gh-contribution-graph.vercel.app';
-    const embedUrl = `${baseUrl}/api/graph?username=${encodeURIComponent(githubData.username)}&theme=${theme}`;
-    const linkUrl = `${baseUrl}/?username=${encodeURIComponent(githubData.username)}&theme=${theme}`;
+    const baseUrl = 'https://gh-visualizer.vercel.app';
+    const embedUrl = `${baseUrl}/api/graph?username=${encodeURIComponent(githubData.username)}&theme=${theme}&font=${font}&hide_border=${hideBorder}`;
+    const linkUrl = `${baseUrl}/?username=${encodeURIComponent(githubData.username)}&theme=${theme}&font=${font}&hide_border=${hideBorder}`;
     const markdown = `[![GitHub Contributions](${embedUrl})](${linkUrl})`;
     
     try {
@@ -135,6 +141,39 @@ export default function App() {
                 </select>
               </div>
               
+
+              <div>
+                <label htmlFor="font" className="block text-sm font-medium text-gray-300">
+                  Font Family
+                </label>
+                <select
+                  id="font"
+                  name="font"
+                  className="mt-2 block w-full pl-3 pr-10 py-3 text-base border-gray-700 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md bg-gray-800 text-white capitalize"
+                  value={font}
+                  onChange={(e) => setFont(e.target.value)}
+                >
+                  <option value="inter">Inter (Default)</option>
+                  <option value="mali">Mali</option>
+                  <option value="roboto mono">Roboto Mono</option>
+                  <option value="comic neue">Comic Neue</option>
+                </select>
+              </div>
+              <div className="flex items-center justify-between mt-4">
+                <label htmlFor="hideBorder" className="text-sm font-medium text-gray-300">
+                  Hide Outer Border
+                </label>
+                <button
+                  id="hideBorder"
+                  type="button"
+                  role="switch"
+                  aria-checked={hideBorder}
+                  onClick={() => setHideBorder(!hideBorder)}
+                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${hideBorder ? 'bg-emerald-500' : 'bg-gray-700'}`}
+                >
+                  <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${hideBorder ? 'translate-x-5' : 'translate-x-0'}`} />
+                </button>
+              </div>
               <div>
                 <label htmlFor="strategy" className="block text-sm font-medium text-gray-300">
                   Attack Strategy
@@ -244,12 +283,14 @@ export default function App() {
             
             <div 
               ref={graphRef}
-              className="w-full bg-black rounded-lg border border-gray-800 relative shadow-inner overflow-hidden aspect-[86/23] flex items-center justify-center"
+              className={`w-full bg-black rounded-lg border border-gray-800 relative shadow-inner overflow-hidden flex items-center justify-center ${
+                viewMode === 'shooter' ? 'aspect-[86/23]' : ''
+              }`}
             >
               {viewMode === 'shooter' ? (
                 <SpaceShooter data={githubData} strategy={strategy} theme={theme} />
               ) : (
-                <ContributionGraph data={githubData} theme={theme} />
+                <ContributionGraph data={githubData} theme={theme} font={font} hideBorder={hideBorder} />
               )}
             </div>
             

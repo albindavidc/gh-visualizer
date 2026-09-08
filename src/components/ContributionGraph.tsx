@@ -1,41 +1,193 @@
 import React from 'react';
 import { THEMES } from '../themes';
+import { calculateStreaks } from '../utils/streaks';
+import { Flame, Github } from 'lucide-react';
 
 interface ContributionGraphProps {
   data: {
     username: string;
+    total_contributions: number;
     weeks: {
       days: { count: number; level: number; date: string }[];
     }[];
+    topLanguages?: { name: string; color: string; percent: number }[];
   };
   theme?: string;
+  font?: string;
+  hideBorder?: boolean;
 }
 
-export function ContributionGraph({ data, theme = 'github' }: ContributionGraphProps) {
+export function ContributionGraph({ data, theme = 'github', font = 'inter', hideBorder = false }: ContributionGraphProps) {
   const currentTheme = THEMES[theme] || THEMES.github;
-  
-  // We expect up to 52 weeks, 7 days a week.
+  const stats = calculateStreaks(data.weeks);
+  const primaryColor = currentTheme.levels[4] || '#39d353';
+
+  const fontFamilies: Record<string, string> = {
+    'inter': '"Inter", sans-serif',
+    'mali': '"Mali", cursive',
+    'roboto mono': '"Roboto Mono", monospace',
+    'comic neue': '"Comic Neue", cursive',
+  };
+  const fontFamily = fontFamilies[font.toLowerCase()] || fontFamilies.inter;
+
+
+const containerRef = React.useRef<HTMLDivElement>(null);
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  const [scale, setScale] = React.useState(1);
+  const [containerHeight, setContainerHeight] = React.useState<number | undefined>(undefined);
+
+  React.useEffect(() => {
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const width = entry.contentRect.width;
+        if (width < 800) {
+          const newScale = width / 800;
+          setScale(newScale);
+          if (contentRef.current) {
+            setContainerHeight(contentRef.current.offsetHeight * newScale + 10);
+          }
+        } else {
+          setScale(1);
+          setContainerHeight(undefined);
+        }
+      }
+    });
+    
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+    
+    return () => resizeObserver.disconnect();
+  }, []);
+
+
   return (
     <div 
-      className="w-full flex items-center justify-center p-6 rounded-lg"
-      style={{ backgroundColor: currentTheme.bg }}
+      className={`w-full flex flex-col items-center justify-center p-8 rounded-lg ${!hideBorder ? 'border border-gray-800' : ''}`}
+      style={{ backgroundColor: hideBorder ? 'transparent' : currentTheme.bg, fontFamily }}
+
     >
-      <div className="flex gap-[3px] overflow-x-auto pb-2">
-        {data.weeks.map((week, weekIndex) => (
-          <div key={weekIndex} className="flex flex-col gap-[3px]">
-            {/* Some weeks might have fewer than 7 days if it's the start/end of the year,
-                so we render up to 7 slots properly aligned. 
-                For a simple visualization, we just map over the days. */}
-            {week.days.map((day, dayIndex) => (
-              <div
-                key={dayIndex}
-                title={`${day.count} contributions on ${day.date || 'unknown'}`}
-                className="w-[12px] h-[12px] rounded-sm transition-opacity hover:opacity-80"
-                style={{ backgroundColor: currentTheme.levels[day.level] || currentTheme.levels[4] }}
-              />
+      {/* Header: Username */}
+      <div className="w-full flex items-center justify-between mb-8 px-4">
+        <div className="flex items-center gap-3">
+          <Github size={28} className="text-white" />
+          <span className="text-2xl font-semibold text-white tracking-wide">{data.username}</span>
+        </div>
+        <div className="text-sm " style={{ color: primaryColor }}>
+          GitHub Stats
+        </div>
+      </div>
+
+      {/* Top Stats Section - Row 1 */}
+      <div className="w-full max-w-[800px] flex flex-col md:flex-row items-center justify-between mb-10 gap-4">
+        
+        {/* Total Contributions */}
+        <div className="flex-1 flex flex-col items-center justify-center text-center">
+          <div className="text-4xl font-bold text-white mb-2 tracking-tight">
+            {data.total_contributions.toLocaleString()}
+          </div>
+          <div className="text-sm font-medium mb-2" style={{ color: primaryColor }}>
+            Total Contributions
+          </div>
+          <div className="text-xs text-gray-400">
+            {stats.totalRange}
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="hidden md:block w-px h-28 bg-gray-800" />
+
+        {/* Current Streak (Increased Size) */}
+        <div className="flex-[1.2] flex flex-col items-center justify-center text-center relative scale-110">
+          <div className="relative w-28 h-28 mb-4 flex items-center justify-center rounded-full border-[4px]" style={{ borderColor: primaryColor }}>
+            <div className="absolute -top-5 px-2" style={{ backgroundColor: currentTheme.bg }}>
+              <Flame size={32} style={{ color: primaryColor, fill: primaryColor, fillOpacity: 0.2 }} />
+            </div>
+            <span className="text-5xl font-bold text-white tracking-tight">{stats.currentStreak}</span>
+          </div>
+          <div className="text-base font-bold mb-2" style={{ color: primaryColor }}>
+            Current Streak
+          </div>
+          <div className="text-xs text-gray-400">
+            {stats.currentRange}
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="hidden md:block w-px h-28 bg-gray-800" />
+
+        {/* Longest Streak */}
+        <div className="flex-1 flex flex-col items-center justify-center text-center">
+          <div className="text-4xl font-bold text-white mb-2 tracking-tight">
+            {stats.longestStreak}
+          </div>
+          <div className="text-sm font-medium mb-2" style={{ color: primaryColor }}>
+            Longest Streak
+          </div>
+          <div className="text-xs text-gray-400">
+            {stats.longestRange}
+          </div>
+        </div>
+
+      </div>
+
+      <div className="w-full max-w-[800px] h-px bg-gray-800/50 mb-8" />
+
+      {/* Row 2: Most Used Languages */}
+      <div className="w-full max-w-[800px] flex flex-col mb-10">
+        <div className="text-lg font-medium mb-4 text-center" style={{ color: primaryColor }}>
+          Most Used Languages
+        </div>
+        
+        {/* Progress Bar */}
+        <div className="w-full h-3 flex rounded-full overflow-hidden mb-5 bg-gray-900">
+          {data.topLanguages?.map((lang, idx) => (
+            <div key={idx} style={{ width: `${lang.percent}%`, backgroundColor: lang.color || '#8b949e' }} />
+          ))}
+        </div>
+        
+        {/* Legend Grid */}
+        <div className="grid grid-cols-3 gap-x-8 gap-y-3 w-full max-w-[700px] mx-auto mt-2">
+          {data.topLanguages?.slice(0, 6).map((lang, idx) => (
+            <div key={idx} className="flex items-center text-sm">
+              <div className="w-3 h-3 rounded-full mr-3 flex-shrink-0" style={{ backgroundColor: lang.color || '#8b949e' }} />
+              <span className="text-gray-300 tracking-tight">
+                {lang.name} <span className="text-gray-500 ml-1">{lang.percent.toFixed(2)}%</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="w-full max-w-[800px] h-px bg-gray-800/50 mb-6" />
+
+      {/* Heatmap Section */}
+      <div className="w-full max-w-[800px] flex justify-center overflow-hidden" ref={containerRef} style={{ height: containerHeight }}>
+        <div ref={contentRef} style={{ transform: `scale(${scale})`, transformOrigin: 'top center', width: '800px' }}>
+          <div className="text-lg mb-4" style={{ color: primaryColor }}>
+            Heatmap (Last 52 Weeks)
+          </div>
+          
+          <div className="flex gap-[3px] p-4 rounded-xl border border-gray-800/30 bg-black/20 shadow-inner">
+            {data.weeks.map((week, weekIndex) => (
+              <div key={weekIndex} className="flex flex-col gap-[3px]">
+                {week.days.map((day, dayIndex) => (
+                  <div
+                    key={dayIndex}
+                    title={`${day.count} contributions on ${day.date || 'unknown'}`}
+                    className="w-[12px] h-[12px] rounded-sm transition-opacity hover:opacity-80 cursor-pointer"
+                    style={{ backgroundColor: currentTheme.levels[day.level] || currentTheme.levels[4] }}
+                  />
+                ))}
+              </div>
             ))}
           </div>
-        ))}
+
+          <div className="flex justify-between mt-3 text-sm " style={{ color: primaryColor }}>
+            <span>{data.weeks[0]?.days[0]?.date.replace(/-/g, '.')}</span>
+            <span>{data.weeks[data.weeks.length - 1]?.days[data.weeks[data.weeks.length - 1]?.days.length - 1]?.date.replace(/-/g, '.')}</span>
+          </div>
+        </div>
       </div>
     </div>
   );

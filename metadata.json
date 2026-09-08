@@ -1,0 +1,6 @@
+{
+  "name": "Github Visualizer",
+  "description": "View your contribution graph or transform it into a retro arcade shooter.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
