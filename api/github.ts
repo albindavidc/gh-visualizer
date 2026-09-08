@@ -4,13 +4,14 @@ const NUM_WEEKS = 52;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const username = req.query.username as string;
+
   if (!username) {
     return res.status(400).json({ error: "Username is required" });
   }
 
   const token = process.env.GH_TOKEN;
   if (!token) {
-    return res.status(500).json({ error: "GitHub token not configured on Vercel" });
+    return res.status(500).json({ error: "GitHub token not configured" });
   }
 
   const query = `
@@ -22,8 +23,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             weeks {
               contributionDays {
                 date
+                weekday
                 contributionCount
                 contributionLevel
+              }
+            }
+          }
+        }
+        repositories(ownerAffiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER], first: 100, orderBy: {field: PUSHED_AT, direction: DESC}) {
+          nodes {
+            languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
+              edges {
+                size
+                node {
+                  name
+                  color
+                }
               }
             }
           }
@@ -47,6 +62,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const data = await response.json();
+
     if (data.errors) {
       throw new Error(data.errors.map((e: any) => e.message).join(", "));
     }
@@ -56,10 +72,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const calendar = data.data.user.contributionsCollection.contributionCalendar;
+    
+    const languages: Record<string, { size: number, color: string }> = {};
+    const repos = data.data.user.repositories?.nodes || [];
+    let totalSize = 0;
+    
+    repos.forEach((repo: any) => {
+      if (repo.languages && repo.languages.edges) {
+        repo.languages.edges.forEach((edge: any) => {
+           const size = edge.size;
+           const { name, color } = edge.node;
+           if (!languages[name]) languages[name] = { size: 0, color };
+           languages[name].size += size;
+           totalSize += size;
+        });
+      }
+    });
+    
+    const topLanguages = Object.entries(languages)
+      .map(([name, info]) => ({
+         name,
+         color: info.color,
+         percent: totalSize > 0 ? (info.size / totalSize) * 100 : 0
+      }))
+      .sort((a, b) => b.percent - a.percent)
+      .slice(0, 6);
+
     let weeks = calendar.weeks.map((weekData: any) => {
       return {
         days: weekData.contributionDays.map((dayData: any) => ({
           date: dayData.date,
+          weekday: dayData.weekday,
           count: dayData.contributionCount,
           level: {
             NONE: 0,
@@ -80,6 +123,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       username,
       total_contributions: calendar.totalContributions,
       weeks,
+      topLanguages,
     });
   } catch (err: any) {
     res.status(400).json({ error: err.message || "Failed to fetch data from GitHub" });
