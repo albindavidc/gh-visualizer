@@ -100,10 +100,28 @@ const containerRef = React.useRef<HTMLDivElement>(null);
 
         {/* Current Streak (Increased Size) */}
         <div className="flex-[1.2] flex flex-col items-center justify-center text-center relative scale-110">
-          <div className="relative w-28 h-28 mb-4 flex items-center justify-center rounded-full border-[4px]" style={{ borderColor: primaryColor }}>
-            <div className="absolute -top-5 px-3 py-1 rounded-full" style={{ backgroundColor: currentTheme.bg }}>
+          <div className="relative w-28 h-28 mb-4 flex items-center justify-center">
+            {/* SVG Ring with Gap */}
+            <svg width="112" height="112" viewBox="0 0 112 112" className="absolute inset-0">
+              <circle 
+                cx="56" 
+                cy="56" 
+                r="50" 
+                fill="none" 
+                stroke={primaryColor} 
+                strokeWidth="6" 
+                strokeLinecap="round"
+                strokeDasharray="264 50"
+                strokeDashoffset="-25"
+                transform="rotate(-90 56 56)"
+              />
+            </svg>
+            
+            {/* Flame Icon */}
+            <div className="absolute -top-4">
               <Flame size={32} style={{ color: primaryColor, fill: primaryColor, fillOpacity: 0.2 }} />
             </div>
+            
             <span className="text-5xl font-bold text-white tracking-tight">{stats.currentStreak}</span>
           </div>
           <div className="text-base font-bold mb-2" style={{ color: primaryColor }}>
@@ -172,7 +190,7 @@ const containerRef = React.useRef<HTMLDivElement>(null);
             Heatmap (Last 52 Weeks)
           </div>
           
-          <div className="flex gap-[3px] p-4 rounded-xl border border-gray-800/30 bg-black/20 shadow-inner">
+          <div className="flex gap-[3px] p-4 rounded-xl border border-[#162413] bg-[#0A0A0A] shadow-inner">
             {data.weeks.map((week, weekIndex) => (
               <div key={weekIndex} className="flex flex-col gap-[3px]">
                 {week.days.map((day, dayIndex) => (

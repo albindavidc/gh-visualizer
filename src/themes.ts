@@ -5,7 +5,7 @@ export const THEMES: Record<string, { bg: string, levels: string[] }> = {
   },
   sleek: {
     bg: '#0A0A0A',
-    levels: ['#161b22', '#3f6212', '#65a30d', '#84cc16', '#a3e635'],
+    levels: ['#162413', '#38591a', '#5c8f22', '#7ec42a', '#a3ff33'],
   },
   dracula: {
     bg: '#282a36',

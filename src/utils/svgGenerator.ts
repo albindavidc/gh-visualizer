@@ -104,8 +104,7 @@ export function generateSvg(username: string, totalContributions: number, weeks:
       
       <!-- Column 2: Current Streak -->
       <g transform="translate(${cardWidth * 0.50}, 0)">
-        <circle cx="0" cy="30" r="40" fill="none" stroke="${primaryColor}" stroke-width="4" />
-        <rect x="-18" y="-22" width="36" height="26" rx="13" fill="${theme.bg}" />
+        <circle cx="0" cy="30" r="40" fill="none" stroke="${primaryColor}" stroke-width="4" stroke-linecap="round" stroke-dasharray="205 46.3" stroke-dashoffset="-23.15" transform="rotate(-90 0 30)" />
         <g transform="translate(-14, -24) scale(1.1)">
           ${flameSvg}
         </g>
@@ -153,7 +152,7 @@ export function generateSvg(username: string, totalContributions: number, weeks:
     
     <!-- Heatmap -->
     <g transform="translate(${heatmapXOffset}, ${padding + statsHeight + innerPadding + dividerHeight + innerPadding})">
-      <rect x="-8" y="-8" width="${heatmapWidth + 16}" height="${heatmapHeight + 16}" fill="#000000" fill-opacity="0.2" rx="8" stroke="#1f2937" stroke-opacity="0.3" stroke-width="1" />
+      <rect x="-8" y="-8" width="${heatmapWidth + 16}" height="${heatmapHeight + 16}" fill="#0A0A0A" rx="8" stroke="#162413" stroke-width="1" />
 `;
 
   weeks.forEach((week: any, weekIndex: number) => {
