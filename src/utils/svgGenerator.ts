@@ -1,7 +1,7 @@
 import { THEMES } from '../themes';
 import { calculateStreaks } from './streaks';
 
-export function generateSvg(username: string, totalContributions: number, weeks: any[], themeName: string, topLanguages?: { name: string, color: string, percent: number }[], fontName: string = "inter", hideBorder: boolean = false) {
+export function generateSvg(username: string, totalContributions: number, weeks: any[], themeName: string, topLanguages?: { name: string, color: string, percent: number }[], fontName: string = "inter", hideBorder: boolean = false, hideLanguages: boolean = false) {
   const theme = THEMES[themeName] || THEMES.github;
   const primaryColor = theme.levels[4] || '#39d353';
   const stats = calculateStreaks(weeks);
@@ -53,7 +53,7 @@ export function generateSvg(username: string, totalContributions: number, weeks:
     langGridSvg = '<text x="0" y="30" class="mono date">No language data</text>';
   }
 
-  const statsHeight = 280;
+  const statsHeight = hideLanguages ? 130 : 280;
   const dividerHeight = 1;
   const innerPadding = 24;
   
@@ -73,7 +73,7 @@ export function generateSvg(username: string, totalContributions: number, weeks:
         <rect x="0" y="0" width="180" height="8" rx="4" />
       </clipPath>
       <clipPath id="bar-clip-full">
-        <rect x="0" y="0" width="${cardWidth - padding*2}" height="10" rx="5" />
+        <rect x="0" y="0" width="${cardWidth - padding*2}" height="12" rx="6" />
       </clipPath>
 
     </defs>
@@ -90,60 +90,64 @@ export function generateSvg(username: string, totalContributions: number, weeks:
     <!-- Background -->
     ${!hideBorder ? `<rect width="100%" height="100%" fill="${theme.bg}" rx="12" stroke="#1f2937" stroke-width="1" />` : ''}
     
-    <!-- Top Stats Section -->
+    <!-- Top Stats Section - Row 1 -->
     <g transform="translate(0, ${padding})">
       <!-- Column 1: Total Contributions -->
-      <g transform="translate(${cardWidth * 0.12}, 0)">
+      <g transform="translate(${cardWidth * 0.22}, 0)">
         <text x="0" y="40" text-anchor="middle" class="text bold title">${totalContributions.toLocaleString()}</text>
         <text x="0" y="70" text-anchor="middle" class="text medium label">Total Contributions</text>
         <text x="0" y="95" text-anchor="middle" class="mono date">${stats.totalRange}</text>
       </g>
       
       <!-- Divider 1 -->
-      <rect x="${cardWidth * 0.24}" y="10" width="1" height="90" fill="#1f2937" />
+      <rect x="${cardWidth * 0.38}" y="10" width="1" height="90" fill="#1f2937" />
       
       <!-- Column 2: Current Streak -->
-      <g transform="translate(${cardWidth * 0.36}, 0)">
-        <circle cx="0" cy="30" r="36" fill="none" stroke="${primaryColor}" stroke-width="3" />
-        <rect x="-16" y="-20" width="32" height="24" fill="${theme.bg}" />
-        <g transform="translate(-12, -22)">
+      <g transform="translate(${cardWidth * 0.50}, 0)">
+        <circle cx="0" cy="30" r="40" fill="none" stroke="${primaryColor}" stroke-width="4" />
+        <rect x="-18" y="-22" width="36" height="26" rx="13" fill="${theme.bg}" />
+        <g transform="translate(-14, -24) scale(1.1)">
           ${flameSvg}
         </g>
-        <text x="0" y="40" text-anchor="middle" class="text bold title">${stats.currentStreak}</text>
+        <text x="0" y="42" text-anchor="middle" class="text bold title" font-size="36">${stats.currentStreak}</text>
         <text x="0" y="90" text-anchor="middle" class="text medium label">Current Streak</text>
         <text x="0" y="115" text-anchor="middle" class="mono date">${stats.currentRange}</text>
       </g>
       
       <!-- Divider 2 -->
-      <rect x="${cardWidth * 0.48}" y="10" width="1" height="90" fill="#1f2937" />
+      <rect x="${cardWidth * 0.62}" y="10" width="1" height="90" fill="#1f2937" />
       
       <!-- Column 3: Longest Streak -->
-      <g transform="translate(${cardWidth * 0.60}, 0)">
+      <g transform="translate(${cardWidth * 0.78}, 0)">
         <text x="0" y="40" text-anchor="middle" class="text bold title">${stats.longestStreak}</text>
         <text x="0" y="70" text-anchor="middle" class="text medium label">Longest Streak</text>
         <text x="0" y="95" text-anchor="middle" class="mono date">${stats.longestRange}</text>
       </g>
-      
-      <!-- Divider 3 -->
-      <rect x="${cardWidth * 0.72}" y="10" width="1" height="90" fill="#1f2937" />
-      
-      <!-- Column 4: Most Used Languages -->
-      <g transform="translate(${cardWidth * 0.77}, 30)">
-        <text x="0" y="-10" class="text medium label">Most Used Languages</text>
-        
-        <!-- Progress Bar Background/Mask -->
-        <g clip-path="url(#bar-clip)">
-          <rect x="0" y="0" width="180" height="8" fill="#1f2937" />
-          ${langBarSvg}
-        </g>
-        
-        <!-- Legend Grid -->
-        <g transform="translate(0, 10)">
-          ${langGridSvg}
-        </g>
-      </g>
     </g>
     
+    <!-- Horizontal Divider -->
+    ${!hideLanguages ? `
+    <rect x="${padding}" y="${padding + 150}" width="${cardWidth - (padding * 2)}" height="1" fill="#1f2937" />
+    
+    <!-- Stats Row 2: Most Used Languages -->
+    <g transform="translate(${padding}, ${padding + 180})">
+      <text x="${(cardWidth - padding*2) / 2}" y="0" text-anchor="middle" class="text medium label" font-size="16" fill="${primaryColor}">Most Used Languages</text>
+      
+      <!-- Progress Bar Background/Mask -->
+      <g transform="translate(0, 20)">
+        <g clip-path="url(#bar-clip-full)">
+          <rect x="0" y="0" width="${cardWidth - padding*2}" height="12" fill="#1f2937" />
+          ${langBarSvg}
+        </g>
+      </g>
+      
+      <!-- Legend Grid -->
+      <g transform="translate(0, 50)">
+        ${langGridSvg}
+      </g>
+    </g>
+    ` : ''}
+
     <!-- Horizontal Divider -->
     <rect x="${padding}" y="${padding + statsHeight + innerPadding}" width="${cardWidth - (padding * 2)}" height="1" fill="#1f2937" />
     

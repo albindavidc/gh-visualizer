@@ -137,6 +137,7 @@ async function startServer() {
     const themeName = (req.query.theme as string) || 'github';
     const fontName = (req.query.font as string) || 'inter';
     const hideBorder = req.query.hide_border === 'true';
+    const hideLanguages = req.query.hide_languages === 'true';
 
     if (!username) {
       return res.status(400).send("Username is required");
@@ -247,7 +248,7 @@ async function startServer() {
       }
 
       const { generateSvg } = await import('./src/utils/svgGenerator.js');
-      const svg = generateSvg(username, calendar.totalContributions, weeks, themeName, topLanguages, fontName, hideBorder);
+      const svg = generateSvg(username, calendar.totalContributions, weeks, themeName, topLanguages, fontName, hideBorder, hideLanguages);
 
       res.setHeader('Content-Type', 'image/svg+xml');
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');

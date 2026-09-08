@@ -15,9 +15,10 @@ interface ContributionGraphProps {
   theme?: string;
   font?: string;
   hideBorder?: boolean;
+  hideLanguages?: boolean;
 }
 
-export function ContributionGraph({ data, theme = 'github', font = 'inter', hideBorder = false }: ContributionGraphProps) {
+export function ContributionGraph({ data, theme = 'github', font = 'inter', hideBorder = false, hideLanguages = false }: ContributionGraphProps) {
   const currentTheme = THEMES[theme] || THEMES.github;
   const stats = calculateStreaks(data.weeks);
   const primaryColor = currentTheme.levels[4] || '#39d353';
@@ -100,7 +101,7 @@ const containerRef = React.useRef<HTMLDivElement>(null);
         {/* Current Streak (Increased Size) */}
         <div className="flex-[1.2] flex flex-col items-center justify-center text-center relative scale-110">
           <div className="relative w-28 h-28 mb-4 flex items-center justify-center rounded-full border-[4px]" style={{ borderColor: primaryColor }}>
-            <div className="absolute -top-5 px-2" style={{ backgroundColor: currentTheme.bg }}>
+            <div className="absolute -top-5 px-3 py-1 rounded-full" style={{ backgroundColor: currentTheme.bg }}>
               <Flame size={32} style={{ color: primaryColor, fill: primaryColor, fillOpacity: 0.2 }} />
             </div>
             <span className="text-5xl font-bold text-white tracking-tight">{stats.currentStreak}</span>
@@ -133,33 +134,36 @@ const containerRef = React.useRef<HTMLDivElement>(null);
 
       <div className="w-full max-w-[800px] h-px bg-gray-800/50 mb-8" />
 
-      {/* Row 2: Most Used Languages */}
-      <div className="w-full max-w-[800px] flex flex-col mb-10">
-        <div className="text-lg font-medium mb-4 text-center" style={{ color: primaryColor }}>
-          Most Used Languages
-        </div>
-        
-        {/* Progress Bar */}
-        <div className="w-full h-3 flex rounded-full overflow-hidden mb-5 bg-gray-900">
-          {data.topLanguages?.map((lang, idx) => (
-            <div key={idx} style={{ width: `${lang.percent}%`, backgroundColor: lang.color || '#8b949e' }} />
-          ))}
-        </div>
-        
-        {/* Legend Grid */}
-        <div className="grid grid-cols-3 gap-x-8 gap-y-3 w-full max-w-[700px] mx-auto mt-2">
-          {data.topLanguages?.slice(0, 6).map((lang, idx) => (
-            <div key={idx} className="flex items-center text-sm">
-              <div className="w-3 h-3 rounded-full mr-3 flex-shrink-0" style={{ backgroundColor: lang.color || '#8b949e' }} />
-              <span className="text-gray-300 tracking-tight">
-                {lang.name} <span className="text-gray-500 ml-1">{lang.percent.toFixed(2)}%</span>
-              </span>
+      {!hideLanguages && (
+        <>
+          {/* Row 2: Most Used Languages */}
+          <div className="w-full max-w-[800px] flex flex-col mb-10">
+            <div className="text-lg font-medium mb-4 text-center" style={{ color: primaryColor }}>
+              Most Used Languages
             </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="w-full max-w-[800px] h-px bg-gray-800/50 mb-6" />
+            
+            {/* Progress Bar */}
+            <div className="w-full h-3 flex rounded-full overflow-hidden mb-5 bg-gray-900">
+              {data.topLanguages?.map((lang, idx) => (
+                <div key={idx} style={{ width: `${lang.percent}%`, backgroundColor: lang.color || '#8b949e' }} />
+              ))}
+            </div>
+            
+            {/* Legend Grid */}
+            <div className="grid grid-cols-3 gap-x-8 gap-y-3 w-full max-w-[700px] mx-auto mt-2">
+              {data.topLanguages?.slice(0, 6).map((lang, idx) => (
+                <div key={idx} className="flex items-center text-sm">
+                  <div className="w-3 h-3 rounded-full mr-3 flex-shrink-0" style={{ backgroundColor: lang.color || '#8b949e' }} />
+                  <span className="text-gray-300 tracking-tight">
+                    {lang.name} <span className="text-gray-500 ml-1">{lang.percent.toFixed(2)}%</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="w-full max-w-[800px] h-px bg-gray-800/50 mb-6" />
+        </>
+      )}
 
       {/* Heatmap Section */}
       <div className="w-full max-w-[800px] flex justify-center overflow-hidden" ref={containerRef} style={{ height: containerHeight }}>

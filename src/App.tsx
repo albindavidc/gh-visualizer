@@ -10,6 +10,7 @@ export default function App() {
   const [theme, setTheme] = useState('github');
   const [font, setFont] = useState('inter');
   const [hideBorder, setHideBorder] = useState(false);
+  const [hideLanguages, setHideLanguages] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [githubData, setGithubData] = useState<any>(null);
@@ -29,6 +30,8 @@ export default function App() {
     if (urlFont) setFont(urlFont);
     const urlHideBorder = params.get('hide_border') === 'true';
     if (urlHideBorder) setHideBorder(true);
+    const urlHideLanguages = params.get('hide_languages') === 'true';
+    if (urlHideLanguages) setHideLanguages(true);
     const urlTheme = params.get('theme');
     if (urlTheme && THEMES[urlTheme]) {
       setTheme(urlTheme);
@@ -42,7 +45,7 @@ export default function App() {
     setGithubData(null);
     
     // Update URL for sharing
-    window.history.pushState({}, '', `?username=${encodeURIComponent(username)}&mode=${viewMode}&theme=${theme}&font=${font}&hide_border=${hideBorder}`);
+    window.history.pushState({}, '', `?username=${encodeURIComponent(username)}&mode=${viewMode}&theme=${theme}&font=${font}&hide_border=${hideBorder}&hide_languages=${hideLanguages}`);
 
     try {
       const res = await fetch(`/api/github?username=${encodeURIComponent(username)}`);
@@ -72,8 +75,8 @@ export default function App() {
     
     // Using the official Vercel domain for embeds
     const baseUrl = 'https://gh-visualizer.vercel.app';
-    const embedUrl = `${baseUrl}/api/graph?username=${encodeURIComponent(githubData.username)}&theme=${theme}&font=${font}&hide_border=${hideBorder}`;
-    const linkUrl = `${baseUrl}/?username=${encodeURIComponent(githubData.username)}&theme=${theme}&font=${font}&hide_border=${hideBorder}`;
+    const embedUrl = `${baseUrl}/api/graph?username=${encodeURIComponent(githubData.username)}&theme=${theme}&font=${font}&hide_border=${hideBorder}&hide_languages=${hideLanguages}`;
+    const linkUrl = `${baseUrl}/?username=${encodeURIComponent(githubData.username)}&theme=${theme}&font=${font}&hide_border=${hideBorder}&hide_languages=${hideLanguages}`;
     const markdown = `[![GitHub Contributions](${embedUrl})](${linkUrl})`;
     
     try {
@@ -172,6 +175,21 @@ export default function App() {
                   className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${hideBorder ? 'bg-emerald-500' : 'bg-gray-700'}`}
                 >
                   <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${hideBorder ? 'translate-x-5' : 'translate-x-0'}`} />
+                </button>
+              </div>
+              <div className="flex items-center justify-between mt-4">
+                <label htmlFor="hideLanguages" className="text-sm font-medium text-gray-300">
+                  Hide Languages
+                </label>
+                <button
+                  id="hideLanguages"
+                  type="button"
+                  role="switch"
+                  aria-checked={hideLanguages}
+                  onClick={() => setHideLanguages(!hideLanguages)}
+                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${hideLanguages ? 'bg-emerald-500' : 'bg-gray-700'}`}
+                >
+                  <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${hideLanguages ? 'translate-x-5' : 'translate-x-0'}`} />
                 </button>
               </div>
               <div>
@@ -290,7 +308,7 @@ export default function App() {
               {viewMode === 'shooter' ? (
                 <SpaceShooter data={githubData} strategy={strategy} theme={theme} />
               ) : (
-                <ContributionGraph data={githubData} theme={theme} font={font} hideBorder={hideBorder} />
+                <ContributionGraph data={githubData} theme={theme} font={font} hideBorder={hideBorder} hideLanguages={hideLanguages} />
               )}
             </div>
             
