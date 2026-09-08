@@ -34,7 +34,7 @@ async function startServer() {
               }
             }
           }
-          repositories(ownerAffiliations: OWNER, isFork: false, first: 100, orderBy: {field: PUSHED_AT, direction: DESC}) {
+          repositories(ownerAffiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER], first: 100, orderBy: {field: PUSHED_AT, direction: DESC}) {
             nodes {
               languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
                 edges {
@@ -163,7 +163,7 @@ async function startServer() {
               }
             }
           }
-          repositories(ownerAffiliations: OWNER, isFork: false, first: 100, orderBy: {field: PUSHED_AT, direction: DESC}) {
+          repositories(ownerAffiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER], first: 100, orderBy: {field: PUSHED_AT, direction: DESC}) {
             nodes {
               languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
                 edges {
