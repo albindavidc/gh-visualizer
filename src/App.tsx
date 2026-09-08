@@ -1,21 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { SpaceShooter } from './components/SpaceShooter';
 import { ContributionGraph } from './components/ContributionGraph';
-import { Github, Play, Loader2, LayoutGrid, Gamepad2 } from 'lucide-react';
+import { Github, Play, Loader2, LayoutGrid, Gamepad2, Check, Code } from 'lucide-react';
 
 export default function App() {
-  const [username, setUsername] = useState('zane-chen');
+  const [username, setUsername] = useState('');
   const [strategy, setStrategy] = useState('random');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [githubData, setGithubData] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'shooter' | 'classic'>('classic');
+  const [copiedEmbed, setCopiedEmbed] = useState(false);
+  const graphRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const user = params.get('username') || 'zane-chen';
+    setUsername(user);
+    const mode = params.get('mode');
+    if (mode === 'shooter' || mode === 'classic') {
+      setViewMode(mode);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setGithubData(null);
+    
+    // Update URL for sharing
+    window.history.pushState({}, '', `?username=${encodeURIComponent(username)}&mode=${viewMode}`);
 
     try {
       const res = await fetch(`/api/github?username=${encodeURIComponent(username)}`);
@@ -37,6 +52,24 @@ export default function App() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCopyEmbed = async () => {
+    if (!githubData?.username) return;
+    
+    // Using the official Vercel domain for embeds
+    const baseUrl = 'https://gh-contribution-graph.vercel.app';
+    const embedUrl = `${baseUrl}/api/graph?username=${encodeURIComponent(githubData.username)}`;
+    const linkUrl = `${baseUrl}/?username=${encodeURIComponent(githubData.username)}`;
+    const markdown = `[![GitHub Contributions](${embedUrl})](${linkUrl})`;
+    
+    try {
+      await navigator.clipboard.writeText(markdown);
+      setCopiedEmbed(true);
+      setTimeout(() => setCopiedEmbed(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy embed link', err);
     }
   };
 
@@ -134,7 +167,7 @@ export default function App() {
 
         {githubData && (
           <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-2xl p-6 sm:p-8 overflow-hidden">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start sm:items-center gap-4 mb-6">
               <div>
                 <h2 className="text-xl font-bold text-white">Target Acquired: {githubData.username}</h2>
                 <span className="inline-flex items-center px-3 py-1 mt-2 rounded-full text-sm font-medium bg-emerald-900/50 text-emerald-400 border border-emerald-800/50">
@@ -142,33 +175,54 @@ export default function App() {
                 </span>
               </div>
               
-              <div className="flex bg-gray-800 p-1 rounded-lg border border-gray-700">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex bg-gray-800 p-1 rounded-lg border border-gray-700">
+                  <button
+                    onClick={() => setViewMode('classic')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      viewMode === 'classic' 
+                        ? 'bg-gray-700 text-white shadow-sm' 
+                        : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50'
+                    }`}
+                  >
+                    <LayoutGrid size={16} />
+                    Classic Graph
+                  </button>
+                  <button
+                    onClick={() => setViewMode('shooter')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      viewMode === 'shooter' 
+                        ? 'bg-gray-700 text-white shadow-sm' 
+                        : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50'
+                    }`}
+                  >
+                    <Gamepad2 size={16} />
+                    Space Shooter
+                  </button>
+                </div>
+
                 <button
-                  onClick={() => setViewMode('classic')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    viewMode === 'classic' 
-                      ? 'bg-gray-700 text-white shadow-sm' 
-                      : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50'
+                  onClick={handleCopyEmbed}
+                  disabled={viewMode === 'shooter'}
+                  title={viewMode === 'shooter' ? 'Embedding is only supported in Classic mode' : 'Copy markdown embed link'}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
+                    copiedEmbed
+                      ? 'bg-emerald-900/40 text-emerald-400 border-emerald-800'
+                      : viewMode === 'shooter'
+                      ? 'bg-gray-800/50 text-gray-600 border-gray-800 cursor-not-allowed'
+                      : 'bg-gray-800 text-gray-300 hover:text-white hover:bg-gray-700 border-gray-700'
                   }`}
                 >
-                  <LayoutGrid size={16} />
-                  Classic Graph
-                </button>
-                <button
-                  onClick={() => setViewMode('shooter')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    viewMode === 'shooter' 
-                      ? 'bg-gray-700 text-white shadow-sm' 
-                      : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50'
-                  }`}
-                >
-                  <Gamepad2 size={16} />
-                  Space Shooter
+                  {copiedEmbed ? <Check size={16} /> : <Code size={16} />}
+                  {copiedEmbed ? 'Copied Markdown!' : 'Copy Embed'}
                 </button>
               </div>
             </div>
             
-            <div className="w-full bg-black rounded-lg border border-gray-800 relative shadow-inner overflow-hidden aspect-[86/23] flex items-center justify-center">
+            <div 
+              ref={graphRef}
+              className="w-full bg-black rounded-lg border border-gray-800 relative shadow-inner overflow-hidden aspect-[86/23] flex items-center justify-center"
+            >
               {viewMode === 'shooter' ? (
                 <SpaceShooter data={githubData} strategy={strategy} />
               ) : (
