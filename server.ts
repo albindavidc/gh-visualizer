@@ -8,7 +8,7 @@ const NUM_WEEKS = 52;
 
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
   const getGithubData = async (username: string) => {
     const token = process.env.GH_TOKEN;
@@ -179,7 +179,8 @@ const PORT = process.env.PORT || 3000;
   });
 
   if (process.env.NODE_ENV !== "production") {
-    import("vite").then(async ({ createServer: createViteServer }) => {
+    const viteMod = "vite";
+    import(viteMod).then(async ({ createServer: createViteServer }) => {
       const vite = await createViteServer({
         server: { middlewareMode: true },
         appType: "spa",
@@ -196,7 +197,7 @@ const PORT = process.env.PORT || 3000;
       res.sendFile(path.join(distPath, "index.html"));
     });
     // On Cloud Run / standalone node, we want to listen. On Vercel, it might export.
-    if (process.env.SERVER_MODE !== "vercel") {
+    if (!process.env.VERCEL && process.env.SERVER_MODE !== "vercel") {
       app.listen(PORT, "0.0.0.0", () => {
         console.log(`Server running on port ${PORT}`);
       });

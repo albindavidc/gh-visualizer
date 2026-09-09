@@ -63,7 +63,7 @@ export function generateSvg(username: string, totalContributions: number, weeks:
   const dividerMb = 32;
   const row2Height = 100;
   const row2Mb = 40;
-  const divider2Mb = 24;
+  const divider2Mb = 10;
 
   const headerY = padding;
   const row1Y = headerY + headerHeight + headerMb;
@@ -142,8 +142,8 @@ export function generateSvg(username: string, totalContributions: number, weeks:
       
       <!-- Column 2: Current Streak -->
       <g transform="translate(${cardWidth * 0.50}, 0)">
-        <circle cx="0" cy="30" r="40" fill="none" stroke="${primaryColor}" stroke-width="4" stroke-linecap="round" stroke-dasharray="205 46.3" stroke-dashoffset="-23.15" transform="rotate(-90 0 30)" />
-        <g transform="translate(-14, -24) scale(1.1)">
+        <circle cx="0" cy="30" r="36" fill="none" stroke="${primaryColor}" stroke-width="3" stroke-linecap="round" stroke-dasharray="196.2 30" stroke-dashoffset="-15" transform="rotate(-90 0 30)" />
+        <g transform="translate(-12, -18)">
           ${flameSvg}
         </g>
         <text x="0" y="42" text-anchor="middle" class="text bold title" font-size="36">${stats.currentStreak}</text>
