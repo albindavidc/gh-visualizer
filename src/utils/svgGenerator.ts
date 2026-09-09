@@ -63,7 +63,7 @@ export function generateSvg(username: string, totalContributions: number, weeks:
   const dividerMb = 32;
   const row2Height = 100;
   const row2Mb = 40;
-  const divider2Mb = 10;
+  const SECTION_TITLE_MARGIN_TOP = 18;
 
   const headerY = padding;
   const row1Y = headerY + headerHeight + headerMb;
@@ -72,7 +72,7 @@ export function generateSvg(username: string, totalContributions: number, weeks:
   const row2Y = divider1Y + dividerHeight + dividerMb;
   const divider2Y = hideLanguages ? (row1Y + row1Height + row1Mb) : (row2Y + row2Height + row2Mb);
   const heatmapTitleHeight = 30;
-  const heatmapTitleY = divider2Y + dividerHeight + divider2Mb;
+  const heatmapTitleY = divider2Y + dividerHeight + SECTION_TITLE_MARGIN_TOP;
   const heatmapY = heatmapTitleY + heatmapTitleHeight;
   
   const cardHeight = heatmapY + heatmapHeight + 60 + padding;
