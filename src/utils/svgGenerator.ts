@@ -53,15 +53,17 @@ export function generateSvg(username: string, totalContributions: number, weeks:
     langGridSvg = '<text x="0" y="30" class="mono date">No language data</text>';
   }
 
+  const headerHeight = 40;
   const statsHeight = hideLanguages ? 130 : 280;
   const dividerHeight = 1;
   const innerPadding = 24;
   
-  const cardHeight = padding + 60 + statsHeight + innerPadding + dividerHeight + innerPadding + heatmapHeight + 50 + padding;
+  const cardHeight = padding + headerHeight + 30 + 60 + statsHeight + innerPadding + dividerHeight + innerPadding + heatmapHeight + 50 + padding;
   
   const heatmapXOffset = Math.max(padding, (cardWidth - heatmapWidth) / 2);
 
   // Flame SVG Path
+  const githubLogo = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>`;
   const flameSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="${primaryColor}" fill-opacity="0.2" stroke="${primaryColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
   </svg>`;
@@ -90,8 +92,17 @@ export function generateSvg(username: string, totalContributions: number, weeks:
     <!-- Background -->
     ${!hideBorder ? `<rect width="100%" height="100%" fill="${theme.bg}" rx="12" stroke="#1f2937" stroke-width="1" />` : ''}
     
+    <!-- Header -->
+    <g transform="translate(${padding + 16}, ${padding})">
+      ${githubLogo}
+      <text x="40" y="20" class="text bold" font-size="24" fill="#ffffff" dominant-baseline="middle">${username}</text>
+    </g>
+    <g transform="translate(${cardWidth - padding - 16}, ${padding})">
+      <text x="0" y="20" class="text medium label" text-anchor="end" dominant-baseline="middle">GitHub Stats</text>
+    </g>
+    
     <!-- Top Stats Section - Row 1 -->
-    <g transform="translate(0, ${padding})">
+    <g transform="translate(0, ${padding + headerHeight + 30})">
       <!-- Column 1: Total Contributions -->
       <g transform="translate(${cardWidth * 0.22}, 0)">
         <text x="0" y="40" text-anchor="middle" class="text bold title">${totalContributions.toLocaleString()}</text>
@@ -156,7 +167,7 @@ export function generateSvg(username: string, totalContributions: number, weeks:
 `;
 
   weeks.forEach((week: any, weekIndex: number) => {
-    week.days.forEach((day: any) => {
+    week.days.forEach((day: any, dayIndex: number) => {
       // SVG generator expects { date, count, level, weekday }
       // Our streaks utility gives us everything we need, but we need weekday for Y pos
       // Since it's a 7-day week array, we can just use the dayIndex (0 = Sunday, 6 = Saturday)

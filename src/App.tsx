@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SpaceShooter } from './components/SpaceShooter';
 import { ContributionGraph } from './components/ContributionGraph';
-import { Github, Play, Loader2, LayoutGrid, Gamepad2, Check, Code } from 'lucide-react';
+import { Github, Play, Loader2, LayoutGrid, Gamepad2, Check, Code, Link } from 'lucide-react';
 import { THEMES } from './themes';
 
 export default function App() {
@@ -16,6 +16,7 @@ export default function App() {
   const [githubData, setGithubData] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'shooter' | 'classic'>('classic');
   const [copiedEmbed, setCopiedEmbed] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState(false);
   const graphRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -74,7 +75,7 @@ export default function App() {
     if (!githubData?.username) return;
     
     // Using the official Vercel domain for embeds
-    const baseUrl = 'https://gh-visualizer.vercel.app';
+    const baseUrl = window.location.origin;
     const embedUrl = `${baseUrl}/api/graph?username=${encodeURIComponent(githubData.username)}&theme=${theme}&font=${font}&hide_border=${hideBorder}&hide_languages=${hideLanguages}`;
     const linkUrl = `${baseUrl}/?username=${encodeURIComponent(githubData.username)}&theme=${theme}&font=${font}&hide_border=${hideBorder}&hide_languages=${hideLanguages}`;
     const markdown = `[![GitHub Contributions](${embedUrl})](${linkUrl})`;
@@ -85,6 +86,21 @@ export default function App() {
       setTimeout(() => setCopiedEmbed(false), 2000);
     } catch (err) {
       console.error('Failed to copy embed link', err);
+    }
+  };
+
+  const handleCopyUrl = async () => {
+    if (!githubData?.username) return;
+    
+    const baseUrl = window.location.origin;
+    const embedUrl = `${baseUrl}/api/graph?username=${encodeURIComponent(githubData.username)}&theme=${theme}&font=${font}&hide_border=${hideBorder}&hide_languages=${hideLanguages}`;
+    
+    try {
+      await navigator.clipboard.writeText(embedUrl);
+      setCopiedUrl(true);
+      setTimeout(() => setCopiedUrl(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy direct URL', err);
     }
   };
 
@@ -281,6 +297,21 @@ export default function App() {
                   </button>
                 </div>
 
+                <button
+                  onClick={handleCopyUrl}
+                  disabled={viewMode === 'shooter'}
+                  title={viewMode === 'shooter' ? 'Embedding is only supported in Classic mode' : 'Copy direct image URL'}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
+                    copiedUrl
+                      ? 'bg-emerald-900/40 text-emerald-400 border-emerald-800'
+                      : viewMode === 'shooter'
+                      ? 'bg-gray-800/50 text-gray-600 border-gray-800 cursor-not-allowed'
+                      : 'bg-gray-800 text-gray-300 hover:text-white hover:bg-gray-700 border-gray-700'
+                  }`}
+                >
+                  {copiedUrl ? <Check size={16} /> : <Link size={16} />}
+                  {copiedUrl ? 'Copied URL!' : 'Copy URL'}
+                </button>
                 <button
                   onClick={handleCopyEmbed}
                   disabled={viewMode === 'shooter'}
