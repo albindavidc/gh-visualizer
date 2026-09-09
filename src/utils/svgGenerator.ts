@@ -71,7 +71,7 @@ export function generateSvg(username: string, totalContributions: number, weeks:
   const divider1Y = row1Y + row1Height + row1Mb;
   const row2Y = divider1Y + dividerHeight + dividerMb;
   const divider2Y = hideLanguages ? (row1Y + row1Height + row1Mb) : (row2Y + row2Height + row2Mb);
-  const heatmapTitleHeight = 30;
+  const heatmapTitleHeight = 44;
   const heatmapTitleY = divider2Y + dividerHeight + SECTION_TITLE_MARGIN_TOP;
   const heatmapY = heatmapTitleY + heatmapTitleHeight;
   
