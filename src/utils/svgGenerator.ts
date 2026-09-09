@@ -104,7 +104,7 @@ export function generateSvg(username: string, totalContributions: number, weeks:
       </clipPath>
 
     </defs>
-    
+    <style>
       ${fontImport}
       .text, .title, .label, .date { font-family: ${fontFamily}; }
       .mono { font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace; }

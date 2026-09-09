@@ -75,7 +75,7 @@ export default function App() {
     if (!githubData?.username) return;
     
     // Using the official Vercel domain for embeds
-    const baseUrl = window.location.origin;
+    const baseUrl = 'https://gh-visualizer.vercel.app';
     const embedUrl = `${baseUrl}/api/graph?username=${encodeURIComponent(githubData.username)}&theme=${theme}&font=${font}&hide_border=${hideBorder}&hide_languages=${hideLanguages}`;
     const linkUrl = `${baseUrl}/?username=${encodeURIComponent(githubData.username)}&theme=${theme}&font=${font}&hide_border=${hideBorder}&hide_languages=${hideLanguages}`;
     const markdown = `[![GitHub Contributions](${embedUrl})](${linkUrl})`;
@@ -92,7 +92,7 @@ export default function App() {
   const handleCopyUrl = async () => {
     if (!githubData?.username) return;
     
-    const baseUrl = window.location.origin;
+    const baseUrl = 'https://gh-visualizer.vercel.app';
     const embedUrl = `${baseUrl}/api/graph?username=${encodeURIComponent(githubData.username)}&theme=${theme}&font=${font}&hide_border=${hideBorder}&hide_languages=${hideLanguages}`;
     
     try {
