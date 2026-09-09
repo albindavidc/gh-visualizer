@@ -179,7 +179,8 @@ const PORT = Number(process.env.PORT) || 3000;
   });
 
   if (process.env.NODE_ENV !== "production") {
-    import("vite").then(async ({ createServer: createViteServer }) => {
+    const viteMod = "vite";
+    import(viteMod).then(async ({ createServer: createViteServer }) => {
       const vite = await createViteServer({
         server: { middlewareMode: true },
         appType: "spa",
@@ -188,7 +189,7 @@ const PORT = Number(process.env.PORT) || 3000;
       app.listen(PORT, "0.0.0.0", () => {
         console.log(`Server running on http://0.0.0.0:${PORT}`);
       });
-    });
+    }).catch(err => console.error("Vite failed to load:", err));
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
