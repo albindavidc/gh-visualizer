@@ -170,12 +170,27 @@ function generateSvg(username: string, totalContributions: number, weeks: any[],
     langGridSvg = '<text x="0" y="30" class="mono date">No language data</text>';
   }
 
+// Heights and Margins
   const headerHeight = 40;
-  const statsHeight = hideLanguages ? 130 : 280;
+  const headerMb = 30;
+  const row1Height = 120;
+  const row1Mb = 40;
   const dividerHeight = 1;
-  const innerPadding = 24;
+  const dividerMb = 32;
+  const row2Height = 100;
+  const row2Mb = 40;
+  const divider2Mb = 24;
+
+  const headerY = padding;
+  const row1Y = headerY + headerHeight + headerMb;
   
-  const cardHeight = padding + headerHeight + 30 + 60 + statsHeight + innerPadding + dividerHeight + innerPadding + heatmapHeight + 50 + padding;
+  const divider1Y = row1Y + row1Height + row1Mb;
+  const row2Y = divider1Y + dividerHeight + dividerMb;
+  
+  const divider2Y = hideLanguages ? (row1Y + row1Height + row1Mb) : (row2Y + row2Height + row2Mb);
+  const heatmapY = divider2Y + dividerHeight + divider2Mb;
+  
+  const cardHeight = heatmapY + heatmapHeight + 50 + padding;
   
   const heatmapXOffset = Math.max(padding, (cardWidth - heatmapWidth) / 2);
 
@@ -219,7 +234,7 @@ function generateSvg(username: string, totalContributions: number, weeks: any[],
     </g>
     
     <!-- Top Stats Section - Row 1 -->
-    <g transform="translate(0, ${padding + headerHeight + 30})">
+    <g transform="translate(0, ${row1Y})">
       <!-- Column 1: Total Contributions -->
       <g transform="translate(${cardWidth * 0.22}, 0)">
         <text x="0" y="40" text-anchor="middle" class="text bold title">${totalContributions.toLocaleString()}</text>
@@ -254,10 +269,10 @@ function generateSvg(username: string, totalContributions: number, weeks: any[],
     
     <!-- Horizontal Divider -->
     ${!hideLanguages ? `
-    <rect x="${padding}" y="${padding + 150}" width="${cardWidth - (padding * 2)}" height="1" fill="#1f2937" />
+    <rect x="${padding}" y="${divider1Y}" width="${cardWidth - (padding * 2)}" height="${dividerHeight}" fill="#1f2937" />
     
     <!-- Stats Row 2: Most Used Languages -->
-    <g transform="translate(${padding}, ${padding + 180})">
+    <g transform="translate(${padding}, ${row2Y})">
       <text x="${(cardWidth - padding*2) / 2}" y="0" text-anchor="middle" class="text medium label" font-size="16" fill="${primaryColor}">Most Used Languages</text>
       
       <!-- Progress Bar Background/Mask -->
@@ -276,10 +291,10 @@ function generateSvg(username: string, totalContributions: number, weeks: any[],
     ` : ''}
 
     <!-- Horizontal Divider -->
-    <rect x="${padding}" y="${padding + statsHeight + innerPadding}" width="${cardWidth - (padding * 2)}" height="1" fill="#1f2937" />
+    <rect x="${padding}" y="${divider2Y}" width="${cardWidth - (padding * 2)}" height="${dividerHeight}" fill="#1f2937" />
     
     <!-- Heatmap -->
-    <g transform="translate(${heatmapXOffset}, ${padding + statsHeight + innerPadding + dividerHeight + innerPadding})">
+    <g transform="translate(${heatmapXOffset}, ${heatmapY})">
       <rect x="-8" y="-8" width="${heatmapWidth + 16}" height="${heatmapHeight + 16}" fill="#0A0A0A" rx="8" stroke="#162413" stroke-width="1" />
 `;
 
