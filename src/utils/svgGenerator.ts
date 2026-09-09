@@ -105,7 +105,7 @@ export function generateSvg(username: string, totalContributions: number, weeks:
     </style>
     
     <!-- Background -->
-    ${!hideBorder ? `<rect width="100%" height="100%" fill="${theme.bg}" rx="12" stroke="#1f2937" stroke-width="1" />` : ''}
+    <rect width="100%" height="100%" fill="${theme.bg}" rx="12" ${!hideBorder ? 'stroke="#1f2937" stroke-width="1"' : ''} />
     
     <!-- Header -->
     <g transform="translate(${padding + 16}, ${padding})">
@@ -201,9 +201,20 @@ export function generateSvg(username: string, totalContributions: number, weeks:
     });
   });
 
+  
+  const firstDate = weeks[0]?.days[0]?.date?.replace(/-/g, '.') || '';
+  const lastWeek = weeks[weeks.length - 1];
+  const lastDate = lastWeek?.days[lastWeek.days.length - 1]?.date?.replace(/-/g, '.') || '';
+
   svg += `
     </g>
+    <!-- Heatmap Dates -->
+    <g transform="translate(${heatmapXOffset}, ${heatmapY + heatmapHeight + 30})">
+      <text x="0" y="0" class="text" font-size="12" fill="${primaryColor}">${firstDate}</text>
+      <text x="${heatmapWidth}" y="0" text-anchor="end" class="text" font-size="12" fill="${primaryColor}">${lastDate}</text>
+    </g>
   </svg>`;
-
+  
   return svg;
 }
+

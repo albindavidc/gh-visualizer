@@ -65,7 +65,7 @@ const containerRef = React.useRef<HTMLDivElement>(null);
   return (
     <div 
       className={`w-full flex flex-col items-center justify-center p-8 rounded-lg ${!hideBorder ? 'border border-gray-800' : ''}`}
-      style={{ backgroundColor: hideBorder ? 'transparent' : currentTheme.bg, fontFamily }}
+      style={{ backgroundColor: currentTheme.bg, fontFamily }}
 
     >
       {/* Header: Username */}
