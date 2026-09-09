@@ -1,4 +1,5 @@
 import { THEMES } from '../themes';
+import { FONTS_CSS } from './fonts';
 import { calculateStreaks } from './streaks';
 
 export function generateSvg(username: string, totalContributions: number, weeks: any[], themeName: string, topLanguages?: { name: string, color: string, percent: number }[], fontName: string = "inter", hideBorder: boolean = false, hideLanguages: boolean = false) {
@@ -91,7 +92,7 @@ export function generateSvg(username: string, totalContributions: number, weeks:
     'comic neue': '"Comic Neue", cursive',
   };
   const fontFamily = fontFamilies[fontName.toLowerCase()] || fontFamilies.inter;
-  const fontImport = "@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Inter:wght@400;500;700&family=Mali:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap');";
+  const fontImport = FONTS_CSS;
 
   let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${cardWidth}" height="${cardHeight}">
     

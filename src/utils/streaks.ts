@@ -75,9 +75,7 @@ export function calculateStreaks(weeks: Week[]) {
     ? (longestStreakStart === longestStreakEnd ? formatShortDate(longestStreakStart) : `${formatShortDate(longestStreakStart)} - ${formatShortDate(longestStreakEnd)}`)
     : '-';
 
-  const firstDay = days[0]?.date || '';
-  const lastDay = days[days.length - 1]?.date || '';
-  const totalRange = firstDay && lastDay ? `${formatDate(firstDay)} - ${formatDate(lastDay).split(',')[1] || 'Present'}` : '-';
+  const totalRange = "All Time";
 
   return {
     currentStreak,

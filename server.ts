@@ -8,20 +8,15 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  app.get("/api/github", async (req, res) => {
-    const username = req.query.username as string;
-    if (!username) {
-      return res.status(400).json({ error: "Username is required" });
-    }
+  const getGithubData = async (username: string) => {
     const token = process.env.GH_TOKEN;
-    if (!token) {
-      return res.status(500).json({ error: "GitHub token not configured" });
-    }
+    if (!token) throw new Error("GitHub token not configured");
 
     const query = `
       query($username: String!) {
         user(login: $username) {
           contributionsCollection {
+            contributionYears
             contributionCalendar {
               totalContributions
               weeks {
@@ -51,205 +46,129 @@ async function startServer() {
       }
     `;
 
-    try {
-      const response = await fetch("https://api.github.com/graphql", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ query, variables: { username } }),
-      });
+    const response = await fetch("https://api.github.com/graphql", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query, variables: { username } }),
+    });
 
-      if (!response.ok) {
-        throw new Error(`GitHub API returned ${response.status}`);
-      }
+    if (!response.ok) throw new Error(`GitHub API returned ${response.status}`);
+    const data = await response.json();
+    if (data.errors || !data.data?.user) throw new Error(data.errors?.[0]?.message || `User '${username}' not found`);
 
-      const data = await response.json();
-      if (data.errors) {
-        throw new Error(data.errors.map((e: any) => e.message).join(", "));
-      }
+    const calendar = data.data.user.contributionsCollection.contributionCalendar;
+    const years = data.data.user.contributionsCollection.contributionYears || [];
+    let allTimeTotal = calendar.totalContributions;
 
-      if (!data.data?.user) {
-        return res.status(404).json({ error: `User '${username}' not found` });
-      }
-
-      const calendar = data.data.user.contributionsCollection.contributionCalendar;
-      
-      const languages: Record<string, { size: number, color: string }> = {};
-      const repos = data.data.user.repositories?.nodes || [];
-      let totalSize = 0;
-      repos.forEach((repo: any) => {
-        if (repo.languages && repo.languages.edges) {
-          repo.languages.edges.forEach((edge: any) => {
-             const size = edge.size;
-             const { name, color } = edge.node;
-             if (!languages[name]) languages[name] = { size: 0, color };
-             languages[name].size += size;
-             totalSize += size;
-          });
+    if (years.length > 0) {
+      const yearQueries = years.map((year: number) => `
+        year${year}: contributionsCollection(from: "${year}-01-01T00:00:00Z", to: "${year}-12-31T23:59:59Z") {
+          contributionCalendar { totalContributions }
         }
-      });
-      
-      const topLanguages = Object.entries(languages)
-        .map(([name, info]) => ({
-           name,
-           color: info.color,
-           percent: totalSize > 0 ? (info.size / totalSize) * 100 : 0
-        }))
-        .sort((a, b) => b.percent - a.percent)
-        .slice(0, 6);
+      `).join('\\n');
 
-      let weeks = calendar.weeks.map((weekData: any) => {
-        return {
-          days: weekData.contributionDays.map((dayData: any) => ({
-            date: dayData.date,
-            weekday: dayData.weekday,
-            count: dayData.contributionCount,
-            level: {
-              NONE: 0,
-              FIRST_QUARTILE: 1,
-              SECOND_QUARTILE: 2,
-              THIRD_QUARTILE: 3,
-              FOURTH_QUARTILE: 4,
-            }[dayData.contributionLevel] || 0,
-          })),
-        };
-      });
+      const query2 = `
+        query($username: String!) {
+          user(login: $username) {
+            ${yearQueries}
+          }
+        }
+      `;
 
-      if (weeks.length > NUM_WEEKS) {
-        weeks = weeks.slice(-NUM_WEEKS);
+      try {
+        const response2 = await fetch("https://api.github.com/graphql", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ query: query2, variables: { username } }),
+        });
+        if (response2.ok) {
+          const data2 = await response2.json();
+          if (data2.data?.user) {
+            allTimeTotal = 0;
+            for (const year of years) {
+              allTimeTotal += data2.data.user[`year${year}`]?.contributionCalendar?.totalContributions || 0;
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Failed to fetch all-time contributions", e);
       }
+    }
 
-      res.json({
-        username,
-        total_contributions: calendar.totalContributions,
-        weeks,
-        topLanguages,
-      });
+    const languages: Record<string, { size: number, color: string }> = {};
+    const repos = data.data.user.repositories?.nodes || [];
+    let totalSize = 0;
+    repos.forEach((repo: any) => {
+      if (repo.languages && repo.languages.edges) {
+        repo.languages.edges.forEach((edge: any) => {
+          const size = edge.size;
+          const { name, color } = edge.node;
+          if (!languages[name]) languages[name] = { size: 0, color };
+          languages[name].size += size;
+          totalSize += size;
+        });
+      }
+    });
+
+    const topLanguages = Object.entries(languages)
+      .map(([name, info]) => ({
+        name,
+        color: info.color,
+        percent: totalSize > 0 ? (info.size / totalSize) * 100 : 0
+      }))
+      .sort((a, b) => b.percent - a.percent)
+      .slice(0, 6);
+
+    let weeks = calendar.weeks.map((weekData: any) => ({
+      days: weekData.contributionDays.map((dayData: any) => ({
+        date: dayData.date,
+        weekday: dayData.weekday,
+        count: dayData.contributionCount,
+        level: {
+          NONE: 0,
+          FIRST_QUARTILE: 1,
+          SECOND_QUARTILE: 2,
+          THIRD_QUARTILE: 3,
+          FOURTH_QUARTILE: 4,
+        }[dayData.contributionLevel] || 0,
+      })),
+    }));
+
+    if (weeks.length > NUM_WEEKS) {
+      weeks = weeks.slice(-NUM_WEEKS);
+    }
+
+    return { username, allTimeTotal, weeks, topLanguages };
+  };
+
+  app.get("/api/github", async (req, res) => {
+    try {
+      const username = req.query.username as string;
+      if (!username) return res.status(400).json({ error: "Username is required" });
+      const { allTimeTotal, weeks, topLanguages } = await getGithubData(username);
+      res.json({ username, total_contributions: allTimeTotal, weeks, topLanguages });
     } catch (err: any) {
       res.status(400).json({ error: err.message || "Failed to fetch data from GitHub" });
     }
   });
 
   app.get("/api/graph", async (req, res) => {
-    const username = req.query.username as string;
-    const themeName = (req.query.theme as string) || 'github';
-    const fontName = (req.query.font as string) || 'inter';
-    const hideBorder = req.query.hide_border === 'true';
-    const hideLanguages = req.query.hide_languages === 'true';
-
-    if (!username) {
-      return res.status(400).send("Username is required");
-    }
-
-    const token = process.env.GH_TOKEN;
-    if (!token) {
-      return res.status(500).send("GitHub token not configured on Vercel");
-    }
-
-    const query = `
-      query($username: String!) {
-        user(login: $username) {
-          contributionsCollection {
-            contributionCalendar {
-              totalContributions
-              weeks {
-                contributionDays {
-                  date
-                  weekday
-                  contributionCount
-                  contributionLevel
-                }
-              }
-            }
-          }
-          repositories(ownerAffiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER], first: 100, orderBy: {field: PUSHED_AT, direction: DESC}) {
-            nodes {
-              languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
-                edges {
-                  size
-                  node {
-                    name
-                    color
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    `;
-
     try {
-      const response = await fetch("https://api.github.com/graphql", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ query, variables: { username } }),
-      });
-
-      if (!response.ok) {
-        return res.status(response.status).send(`GitHub API returned ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (data.errors || !data.data?.user) {
-        return res.status(404).send(`User '${username}' not found or API error`);
-      }
-
-      const calendar = data.data.user.contributionsCollection.contributionCalendar;
+      const username = req.query.username as string;
+      if (!username) return res.status(400).send("Username is required");
       
-      const languages: Record<string, { size: number, color: string }> = {};
-      const repos = data.data.user.repositories?.nodes || [];
-      let totalSize = 0;
-      repos.forEach((repo: any) => {
-        if (repo.languages && repo.languages.edges) {
-          repo.languages.edges.forEach((edge: any) => {
-             const size = edge.size;
-             const { name, color } = edge.node;
-             if (!languages[name]) languages[name] = { size: 0, color };
-             languages[name].size += size;
-             totalSize += size;
-          });
-        }
-      });
-      
-      const topLanguages = Object.entries(languages)
-        .map(([name, info]) => ({
-           name,
-           color: info.color,
-           percent: totalSize > 0 ? (info.size / totalSize) * 100 : 0
-        }))
-        .sort((a, b) => b.percent - a.percent)
-        .slice(0, 6);
+      const themeName = (req.query.theme as string) || 'github';
+      const fontName = (req.query.font as string) || 'inter';
+      const hideBorder = req.query.hide_border === 'true';
+      const hideLanguages = req.query.hide_languages === 'true';
 
-      let weeks = calendar.weeks.map((weekData: any) => {
-        return {
-          days: weekData.contributionDays.map((dayData: any) => ({
-            date: dayData.date,
-            weekday: dayData.weekday,
-            count: dayData.contributionCount,
-            level: {
-              NONE: 0,
-              FIRST_QUARTILE: 1,
-              SECOND_QUARTILE: 2,
-              THIRD_QUARTILE: 3,
-              FOURTH_QUARTILE: 4,
-            }[dayData.contributionLevel] || 0,
-          })),
-        };
-      });
-
-      if (weeks.length > NUM_WEEKS) {
-        weeks = weeks.slice(-NUM_WEEKS);
-      }
-
+      const { allTimeTotal, weeks, topLanguages } = await getGithubData(username);
       const { generateSvg } = await import('./src/utils/svgGenerator.js');
-      const svg = generateSvg(username, calendar.totalContributions, weeks, themeName, topLanguages, fontName, hideBorder, hideLanguages);
-
+      
+      const svg = generateSvg(username, allTimeTotal, weeks, themeName, topLanguages, fontName, hideBorder, hideLanguages);
       res.setHeader('Content-Type', 'image/svg+xml');
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0');
       res.status(200).send(svg);
