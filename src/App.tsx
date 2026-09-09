@@ -53,14 +53,23 @@ export default function App() {
       
       let data;
       const textResponse = await res.text();
+      let isJson = false;
       try {
         data = JSON.parse(textResponse);
+        isJson = true;
       } catch (e) {
-        throw new Error('Received an invalid response from the server. Ensure the server is running correctly and the API route is accessible.');
+        // Response is not JSON
       }
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to fetch data');
+        if (isJson && data?.error) {
+          throw new Error(data.error);
+        } else {
+          // If we got an HTML error page (e.g. 504 Gateway Timeout or 500 error from proxy/Vercel)
+          throw new Error(`Server Error (${res.status}): ${textResponse.slice(0, 150)}...`);
+        }
+      } else if (!isJson) {
+        throw new Error(`Invalid server response: Expected JSON but received ${res.headers.get('content-type') || 'unknown format'}`);
       }
 
       setGithubData(data);
