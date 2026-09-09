@@ -206,7 +206,6 @@ export function generateSvg(username: string, totalContributions: number, weeks:
       // Note: The GraphQL API groups them from Sunday to Saturday.
       const color = theme.levels[day.level] || theme.levels[4];
       const x = weekIndex * (cellSize + gap);
-      const y = day.weekday !== undefined ? day.weekday * (cellSize + gap) : weekIndex * 7; // fallback
       
       // We need proper Y calculation. In `api/graph.ts` previously it was `day.weekday`.
       // The `server.ts` data processing maps from `contributionDays` where `weekday` wasn't explicitly passed in `server.ts` mapping.

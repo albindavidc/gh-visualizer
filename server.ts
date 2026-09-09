@@ -129,13 +129,13 @@ const PORT = Number(process.env.PORT) || 3000;
         date: dayData.date,
         weekday: dayData.weekday,
         count: dayData.contributionCount,
-        level: {
+        level: ({
           NONE: 0,
           FIRST_QUARTILE: 1,
           SECOND_QUARTILE: 2,
           THIRD_QUARTILE: 3,
           FOURTH_QUARTILE: 4,
-        }[dayData.contributionLevel] || 0,
+        } as Record<string, number>)[dayData.contributionLevel] || 0,
       })),
     }));
 
@@ -179,8 +179,7 @@ const PORT = Number(process.env.PORT) || 3000;
   });
 
   if (process.env.NODE_ENV !== "production") {
-    const viteMod = "vite";
-    import(viteMod).then(async ({ createServer: createViteServer }) => {
+    import("vite").then(async ({ createServer: createViteServer }) => {
       const vite = await createViteServer({
         server: { middlewareMode: true },
         appType: "spa",
