@@ -69,11 +69,12 @@ export function generateSvg(username: string, totalContributions: number, weeks:
   
   const divider1Y = row1Y + row1Height + row1Mb;
   const row2Y = divider1Y + dividerHeight + dividerMb;
-  
   const divider2Y = hideLanguages ? (row1Y + row1Height + row1Mb) : (row2Y + row2Height + row2Mb);
-  const heatmapY = divider2Y + dividerHeight + divider2Mb;
+  const heatmapTitleHeight = 30;
+  const heatmapTitleY = divider2Y + dividerHeight + divider2Mb;
+  const heatmapY = heatmapTitleY + heatmapTitleHeight;
   
-  const cardHeight = heatmapY + heatmapHeight + 50 + padding;
+  const cardHeight = heatmapY + heatmapHeight + 60 + padding;
   
   const heatmapXOffset = Math.max(padding, (cardWidth - heatmapWidth) / 2);
 
@@ -82,6 +83,15 @@ export function generateSvg(username: string, totalContributions: number, weeks:
   const flameSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="${primaryColor}" fill-opacity="0.2" stroke="${primaryColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
   </svg>`;
+
+  const fontFamilies: Record<string, string> = {
+    'inter': '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+    'mali': '"Mali", cursive',
+    'roboto mono': '"Roboto Mono", monospace',
+    'comic neue': '"Comic Neue", cursive',
+  };
+  const fontFamily = fontFamilies[fontName.toLowerCase()] || fontFamilies.inter;
+  const fontImport = "@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Inter:wght@400;500;700&family=Mali:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap');";
 
   let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${cardWidth}" height="${cardHeight}">
     
@@ -94,8 +104,9 @@ export function generateSvg(username: string, totalContributions: number, weeks:
       </clipPath>
 
     </defs>
-    <style>
-      .text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+    
+      ${fontImport}
+      .text, .title, .label, .date { font-family: ${fontFamily}; }
       .mono { font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace; }
       .bold { font-weight: 700; }
       .medium { font-weight: 500; }
@@ -176,6 +187,11 @@ export function generateSvg(username: string, totalContributions: number, weeks:
     <!-- Horizontal Divider -->
     <rect x="${padding}" y="${divider2Y}" width="${cardWidth - (padding * 2)}" height="${dividerHeight}" fill="#1f2937" />
     
+    <!-- Heatmap Title -->
+    <g transform="translate(${heatmapXOffset}, ${heatmapTitleY})">
+      <text x="0" y="20" class="text medium" font-size="16" fill="${primaryColor}">Heatmap (Last 52 Weeks)</text>
+    </g>
+
     <!-- Heatmap -->
     <g transform="translate(${heatmapXOffset}, ${heatmapY})">
       <rect x="-8" y="-8" width="${heatmapWidth + 16}" height="${heatmapHeight + 16}" fill="#0A0A0A" rx="8" stroke="#162413" stroke-width="1" />
