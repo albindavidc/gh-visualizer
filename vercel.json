@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "api/**/*.ts": {
+      "includeFiles": "src/utils/**"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.ts"
+    }
+  ]
+}

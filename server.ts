@@ -1,12 +1,14 @@
 import express from "express";
 import path from "path";
-import { createServer as createViteServer } from "vite";
+
+import { generateSvg } from "./src/utils/svgGenerator.js";
 
 const NUM_WEEKS = 52;
 
-async function startServer() {
-  const app = express();
-  const PORT = 3000;
+
+
+const app = express();
+const PORT = process.env.PORT || 3000;
 
   const getGithubData = async (username: string) => {
     const token = process.env.GH_TOKEN;
@@ -166,7 +168,6 @@ async function startServer() {
       const hideLanguages = req.query.hide_languages === 'true';
 
       const { allTimeTotal, weeks, topLanguages } = await getGithubData(username);
-      const { generateSvg } = await import('./src/utils/svgGenerator.js');
       
       const svg = generateSvg(username, allTimeTotal, weeks, themeName, topLanguages, fontName, hideBorder, hideLanguages);
       res.setHeader('Content-Type', 'image/svg+xml');
@@ -178,22 +179,28 @@ async function startServer() {
   });
 
   if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
+    import("vite").then(async ({ createServer: createViteServer }) => {
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      });
+      app.use(vite.middlewares);
+      app.listen(PORT, "0.0.0.0", () => {
+        console.log(`Server running on http://0.0.0.0:${PORT}`);
+      });
     });
-    app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
     app.get("*", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });
+    // On Cloud Run / standalone node, we want to listen. On Vercel, it might export.
+    if (process.env.SERVER_MODE !== "vercel") {
+      app.listen(PORT, "0.0.0.0", () => {
+        console.log(`Server running on port ${PORT}`);
+      });
+    }
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://0.0.0.0:${PORT}`);
-  });
-}
-
-startServer();
+export default app;
