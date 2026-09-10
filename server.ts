@@ -11,7 +11,20 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
   const getGithubData = async (username: string) => {
-    const token = process.env.GH_TOKEN;
+    let token = process.env.GH_TOKEN;
+
+    if (process.env.NODE_ENV !== "production") {
+      try {
+        const fs = await import("fs");
+        const path = await import("path");
+        const envFile = fs.readFileSync(path.join(process.cwd(), ".env"), "utf8");
+        const match = envFile.match(/^GH_TOKEN=(.*)$/m);
+        if (match && match[1]) {
+           token = match[1].trim();
+        }
+      } catch (e) {}
+    }
+
     if (!token) throw new Error("GitHub token not configured");
 
     const query = `
