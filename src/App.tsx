@@ -263,6 +263,11 @@ export default function App() {
                   <h3 className="text-sm font-medium text-red-300">Mission Failed</h3>
                   <div className="mt-2 text-sm text-red-200">
                     <p>{error}</p>
+                    {error.includes('401') && (
+                      <p className="mt-2 text-red-300 font-semibold">
+                        Hint: If you just updated your token, make sure you also update the GH_TOKEN environment variable in your Vercel Dashboard and redeploy!
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
