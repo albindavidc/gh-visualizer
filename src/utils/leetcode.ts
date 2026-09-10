@@ -1,4 +1,4 @@
-import { Day, Week } from "./streaks";
+import { Day, Week } from "./streaks.js";
 
 export function parseSubmissionCalendar(calendarStr: string | undefined): Week[] {
   let cal: Record<string, number> = {};

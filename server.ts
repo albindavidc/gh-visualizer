@@ -180,8 +180,7 @@ app.get("/api/graph", async (req, res) => {
   }
 });
 
-import { generate as generateLeetCode } from "./src/leetcode/index.ts";
-import Query from "./src/leetcode/query.ts";
+import Query from "./src/leetcode/query.js";
 
 app.get("/api/leetcode-data", async (req, res) => {
   try {
@@ -208,7 +207,7 @@ app.get("/api/leetcode", async (req, res) => {
     const data = site === 'cn' ? await Query.cn(username) : await Query.us(username);
     
     // Import the new SVG generator
-    const { generateLeetcodeSvg } = await import("./src/utils/leetcodeSvgGenerator.ts");
+    const { generateLeetcodeSvg } = await import("./src/utils/leetcodeSvgGenerator.js");
     const svg = generateLeetcodeSvg(username, data, themeName, fontName, hideBorder);
 
     res.setHeader('Content-Type', 'image/svg+xml');
