@@ -6,6 +6,7 @@ import { generateSvg } from "./src/utils/svgGenerator.js";
 const NUM_WEEKS = 52;
 
 const app = express();
+app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 const PORT = Number(process.env.PORT) || 3000;
 
 const getGithubData = async (username: string) => {

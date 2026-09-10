@@ -1,6 +1,6 @@
-import { THEMES } from '../themes';
-import { FONTS_CSS } from './fonts';
-import { calculateStreaks } from './streaks';
+import { THEMES } from '../themes.js';
+import { FONTS_CSS } from './fonts.js';
+import { calculateStreaks } from './streaks.js';
 
 export function generateSvg(username: string, totalContributions: number, weeks: any[], themeName: string, topLanguages?: { name: string, color: string, percent: number }[], fontName: string = "inter", hideBorder: boolean = false, hideLanguages: boolean = false) {
   const theme = THEMES[themeName] || THEMES.github;
