@@ -2,10 +2,13 @@ import { THEMES } from '../themes.js';
 import { FONTS_CSS } from './fonts.js';
 import { calculateStreaks } from './streaks.js';
 
-export function generateSvg(username: string, totalContributions: number, weeks: any[], themeName: string, topLanguages?: { name: string, color: string, percent: number }[], fontName: string = "inter", hideBorder: boolean = false, hideLanguages: boolean = false) {
+export function generateSvg(username: string, totalContributions: number, weeks: any[], themeName: string, topLanguages?: { name: string, color: string, percent: number }[], fontName: string = "inter", hideBorder: boolean = false, hideLanguages: boolean = false, createdAt?: string) {
   const theme = THEMES[themeName] || THEMES.github;
   const primaryColor = theme.levels[4] || '#39d353';
   const stats = calculateStreaks(weeks);
+  
+  const createdDateStr = createdAt ? new Date(createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'All Time';
+  const totalRangeStr = `${createdDateStr} - Present`;
   
   // Dimensions
   const padding = 24;
@@ -134,7 +137,7 @@ export function generateSvg(username: string, totalContributions: number, weeks:
       <g transform="translate(${cardWidth * 0.22}, 0)">
         <text x="0" y="40" text-anchor="middle" class="text bold title">${totalContributions.toLocaleString()}</text>
         <text x="0" y="70" text-anchor="middle" class="text medium label">Total Contributions</text>
-        <text x="0" y="95" text-anchor="middle" class="mono date">${stats.totalRange}</text>
+        <text x="0" y="95" text-anchor="middle" class="mono date">${totalRangeStr}</text>
       </g>
       
       <!-- Divider 1 -->

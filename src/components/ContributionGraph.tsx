@@ -91,7 +91,9 @@ const containerRef = React.useRef<HTMLDivElement>(null);
             Total Contributions
           </div>
           <div className="text-xs text-gray-400">
-            {stats.totalRange}
+            {data.createdAt 
+              ? `${new Date(data.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - Present` 
+              : 'All Time'}
           </div>
         </div>
 

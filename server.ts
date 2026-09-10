@@ -16,6 +16,7 @@ const getGithubData = async (username: string) => {
   const query = `
     query($username: String!) {
       user(login: $username) {
+        createdAt
         contributionsCollection {
           contributionYears
           contributionCalendar {
@@ -142,15 +143,17 @@ const getGithubData = async (username: string) => {
     weeks = weeks.slice(-NUM_WEEKS);
   }
 
-  return { username, allTimeTotal, weeks, topLanguages };
+  const createdAt = data.data.user.createdAt;
+
+  return { username, allTimeTotal, weeks, topLanguages, createdAt };
 };
 
 app.get("/api/github", async (req, res) => {
   try {
     const username = req.query.username as string;
     if (!username) return res.status(400).json({ error: "Username is required" });
-    const { allTimeTotal, weeks, topLanguages } = await getGithubData(username);
-    res.json({ username, total_contributions: allTimeTotal, weeks, topLanguages });
+    const { allTimeTotal, weeks, topLanguages, createdAt } = await getGithubData(username);
+    res.json({ username, total_contributions: allTimeTotal, weeks, topLanguages, createdAt });
   } catch (err: any) {
     res.status(400).json({ error: err.message || "Failed to fetch data from GitHub" });
   }
@@ -166,9 +169,9 @@ app.get("/api/graph", async (req, res) => {
     const hideBorder = req.query.hide_border === 'true';
     const hideLanguages = req.query.hide_languages === 'true';
 
-    const { allTimeTotal, weeks, topLanguages } = await getGithubData(username);
+    const { allTimeTotal, weeks, topLanguages, createdAt } = await getGithubData(username);
     
-    const svg = generateSvg(username, allTimeTotal, weeks, themeName, topLanguages, fontName, hideBorder, hideLanguages);
+    const svg = generateSvg(username, allTimeTotal, weeks, themeName, topLanguages, fontName, hideBorder, hideLanguages, createdAt);
     res.setHeader('Content-Type', 'image/svg+xml');
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0');
     res.status(200).send(svg);
