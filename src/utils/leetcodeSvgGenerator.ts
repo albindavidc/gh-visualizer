@@ -1,5 +1,6 @@
 import { THEMES } from '../themes.js';
 import { FONTS_CSS } from './fonts.js';
+import { parseSubmissionCalendar } from './leetcode.js';
 
 export function generateLeetcodeSvg(
   username: string, 
@@ -36,8 +37,8 @@ export function generateLeetcodeSvg(
   let weeks: any[] = [];
   if (data.weeks) {
     weeks = data.weeks;
-  } else if (data.calendar?.submissionCalendar) {
-     // fallback parsing if needed, but data.weeks should be populated by the frontend API endpoint
+  } else if (data.submissionCalendar) {
+     weeks = parseSubmissionCalendar(data.submissionCalendar);
   }
   
   if (!weeks || !Array.isArray(weeks)) {
