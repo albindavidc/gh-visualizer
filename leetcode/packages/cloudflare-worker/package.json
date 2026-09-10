@@ -1,0 +1,25 @@
+{
+    "private": true,
+    "name": "cloudflare-worker",
+    "version": "0.0.0",
+    "scripts": {
+        "deploy": "wrangler deploy",
+        "dev": "wrangler dev",
+        "start": "wrangler dev",
+        "build": "esbuild src/index.ts --outfile=dist/worker.js --bundle --format=esm --loader:.html=text --keep-names",
+        "test": "vitest",
+        "cf-typegen": "wrangler types"
+    },
+    "devDependencies": {
+        "@cloudflare/vitest-pool-workers": "^0.10.3",
+        "@cloudflare/workers-types": "^4.20251014.0",
+        "esbuild": "^0.25.11",
+        "typescript": "^5.9.3",
+        "vitest": "3.2.4",
+        "wrangler": "^4.45.3"
+    },
+    "dependencies": {
+        "hono": "^4.10.4",
+        "leetcode-card": "workspace:*"
+    }
+}
