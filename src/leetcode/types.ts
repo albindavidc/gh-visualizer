@@ -66,6 +66,7 @@ export interface FetchedData {
         ranking: number;
         badge: string;
     };
+    submissionCalendar?: string;
 
     [key: string]: unknown;
 }

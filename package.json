@@ -13,8 +13,10 @@
     "clsx": "^2.1.1",
     "express": "^4.21.0",
     "framer-motion": "^11.9.0",
+    "leetcode-query": "^2.0.1",
     "lucide-react": "^0.447.0",
     "motion": "^11.9.0",
+    "nano-font": "^0.3.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tailwind-merge": "^2.5.2"

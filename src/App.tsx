@@ -1,19 +1,25 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SpaceShooter } from './components/SpaceShooter';
 import { ContributionGraph } from './components/ContributionGraph';
-import { Github, Play, Loader2, LayoutGrid, Gamepad2, Check, Code, Link } from 'lucide-react';
+import { LeetCodeGraph } from './components/LeetCodeGraph';
+import { Github, Code2, Play, Loader2, LayoutGrid, Gamepad2, Check, Code, Link } from 'lucide-react';
 import { THEMES } from './themes';
 
 export default function App() {
+  const [platform, setPlatform] = useState<'github' | 'leetcode'>('github');
   const [username, setUsername] = useState('');
   const [strategy, setStrategy] = useState('random');
   const [theme, setTheme] = useState('github');
   const [font, setFont] = useState('inter');
   const [hideBorder, setHideBorder] = useState(false);
   const [hideLanguages, setHideLanguages] = useState(false);
+  const [leetcodeSite, setLeetcodeSite] = useState('us');
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [githubData, setGithubData] = useState<any>(null);
+  const [leetcodeData, setLeetcodeData] = useState<any>(null);
+  const [leetcodeDataReady, setLeetcodeDataReady] = useState(false);
   const [viewMode, setViewMode] = useState<'shooter' | 'classic'>('classic');
   const [copiedEmbed, setCopiedEmbed] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
@@ -21,7 +27,9 @@ export default function App() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const user = params.get('username') || 'zane-chen';
+    const plat = params.get('platform') as 'github' | 'leetcode';
+    if (plat === 'github' || plat === 'leetcode') setPlatform(plat);
+    const user = params.get('username') || (plat === 'leetcode' ? 'jacoblincool' : 'zane-chen');
     setUsername(user);
     const mode = params.get('mode');
     if (mode === 'shooter' || mode === 'classic') {
@@ -34,9 +42,9 @@ export default function App() {
     const urlHideLanguages = params.get('hide_languages') === 'true';
     if (urlHideLanguages) setHideLanguages(true);
     const urlTheme = params.get('theme');
-    if (urlTheme && THEMES[urlTheme]) {
-      setTheme(urlTheme);
-    }
+    if (urlTheme) setTheme(urlTheme);
+    const urlSite = params.get('site');
+    if (urlSite) setLeetcodeSite(urlSite);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,50 +52,89 @@ export default function App() {
     setLoading(true);
     setError(null);
     setGithubData(null);
+    setLeetcodeData(null);
+    setLeetcodeDataReady(false);
     
     // Update URL for sharing
-    window.history.pushState({}, '', `?username=${encodeURIComponent(username)}&mode=${viewMode}&theme=${theme}&font=${font}&hide_border=${hideBorder}&hide_languages=${hideLanguages}`);
+    window.history.pushState({}, '', `?platform=${platform}&username=${encodeURIComponent(username)}&mode=${viewMode}&theme=${theme}&font=${font}&hide_border=${hideBorder}&hide_languages=${hideLanguages}&site=${leetcodeSite}`);
 
-    try {
-      const res = await fetch(`/api/github?username=${encodeURIComponent(username)}`);
-      
-      let data;
-      const textResponse = await res.text();
-      let isJson = false;
+    if (platform === 'github') {
       try {
-        data = JSON.parse(textResponse);
-        isJson = true;
-      } catch (e) {
-        // Response is not JSON
-      }
-
-      if (!res.ok) {
-        if (isJson && data?.error) {
-          throw new Error(data.error);
-        } else {
-          // If we got an HTML error page (e.g. 504 Gateway Timeout or 500 error from proxy/Vercel)
-          throw new Error(`Server Error (${res.status}): ${textResponse.slice(0, 150)}...`);
+        const res = await fetch(`/api/github?username=${encodeURIComponent(username)}`);
+        
+        let data;
+        const textResponse = await res.text();
+        let isJson = false;
+        try {
+          data = JSON.parse(textResponse);
+          isJson = true;
+        } catch (e) {
         }
-      } else if (!isJson) {
-        throw new Error(`Invalid server response: Expected JSON but received ${res.headers.get('content-type') || 'unknown format'}`);
-      }
 
-      setGithubData(data);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+        if (!res.ok) {
+          if (isJson && data?.error) {
+            throw new Error(data.error);
+          } else {
+            throw new Error(`Server Error (${res.status}): ${textResponse.slice(0, 150)}...`);
+          }
+        } else if (!isJson) {
+          throw new Error(`Invalid server response: Expected JSON but received ${res.headers.get('content-type') || 'unknown format'}`);
+        }
+
+        setGithubData(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      try {
+        const res = await fetch(`/api/leetcode-data?username=${encodeURIComponent(username)}`);
+        
+        let data;
+        const textResponse = await res.text();
+        let isJson = false;
+        try {
+          data = JSON.parse(textResponse);
+          isJson = true;
+        } catch (e) {
+        }
+
+        if (!res.ok) {
+          if (isJson && data?.error) {
+            throw new Error(data.error);
+          } else {
+            throw new Error(`Server Error (${res.status}): ${textResponse.slice(0, 150)}...`);
+          }
+        } else if (!isJson) {
+          throw new Error(`Invalid server response: Expected JSON but received ${res.headers.get('content-type') || 'unknown format'}`);
+        }
+
+        setLeetcodeData(data);
+        setLeetcodeDataReady(true);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const getEmbedUrl = () => {
+    const baseUrl = window.location.origin;
+    if (platform === 'github') {
+      return `${baseUrl}/api/graph?username=${encodeURIComponent(username)}&theme=${theme}&font=${font}&hide_border=${hideBorder}&hide_languages=${hideLanguages}`;
+    } else {
+      return `${baseUrl}/api/leetcode?username=${encodeURIComponent(username)}&theme=${theme}&font=${font}&hide_border=${hideBorder}&site=${leetcodeSite}`;
     }
   };
 
   const handleCopyEmbed = async () => {
-    if (!githubData?.username) return;
+    if (!username || (!githubData && !leetcodeDataReady)) return;
     
-    // Using the official Vercel domain for embeds
-    const baseUrl = window.location.origin;
-    const embedUrl = `${baseUrl}/api/graph?username=${encodeURIComponent(githubData.username)}&theme=${theme}&font=${font}&hide_border=${hideBorder}&hide_languages=${hideLanguages}`;
-    const linkUrl = `${baseUrl}/?username=${encodeURIComponent(githubData.username)}&theme=${theme}&font=${font}&hide_border=${hideBorder}&hide_languages=${hideLanguages}`;
-    const markdown = `[![GitHub Contributions](${embedUrl})](${linkUrl})`;
+    const embedUrl = getEmbedUrl();
+    const linkUrl = `${window.location.origin}/?platform=${platform}&username=${encodeURIComponent(username)}&theme=${theme}&font=${font}`;
+    const markdown = `[![Stats](${embedUrl})](${linkUrl})`;
     
     try {
       await navigator.clipboard.writeText(markdown);
@@ -99,10 +146,9 @@ export default function App() {
   };
 
   const handleCopyUrl = async () => {
-    if (!githubData?.username) return;
+    if (!username || (!githubData && !leetcodeDataReady)) return;
     
-    const baseUrl = window.location.origin;
-    const embedUrl = `${baseUrl}/api/graph?username=${encodeURIComponent(githubData.username)}&theme=${theme}&font=${font}&hide_border=${hideBorder}&hide_languages=${hideLanguages}`;
+    const embedUrl = getEmbedUrl();
     
     try {
       await navigator.clipboard.writeText(embedUrl);
@@ -118,22 +164,73 @@ export default function App() {
       <div className="max-w-4xl w-full space-y-8">
         <div className="text-center">
           <div className="flex justify-center items-center gap-3 text-emerald-400 mb-4">
-            <Github size={48} />
+            {platform === 'github' ? <Github size={48} /> : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M22,14.355c0-0.742-0.564-1.346-1.26-1.346H10.676c-0.696,0-1.26,0.604-1.26,1.346s0.563,1.346,1.26,1.346H20.74C21.436,15.702,22,15.098,22,14.355z" />
+                <path d="M3.482,18.187l4.313,4.361C8.768,23.527,10.113,24,11.598,24c1.485,0,2.83-0.512,3.805-1.494l2.588-2.637c0.51-0.514,0.492-1.365-0.039-1.9c-0.531-0.535-1.375-0.553-1.884-0.039l-2.676,2.607c-0.462,0.467-1.102,0.662-1.809,0.662s-1.346-0.195-1.81-0.662l-4.298-4.363c-0.463-0.467-0.696-1.15-0.696-1.863c0-0.713,0.233-1.357,0.696-1.824l4.285-4.38c0.463-0.467,1.116-0.645,1.822-0.645s1.346,0.195,1.809,0.662l2.676,2.606c0.51,0.515,1.354,0.497,1.885-0.038c0.531-0.536,0.549-1.387,0.039-1.901l-2.588-2.636c-0.649-0.646-1.471-1.116-2.392-1.33l-0.034-0.007l2.447-2.503c0.512-0.514,0.494-1.366-0.037-1.901c-0.531-0.535-1.376-0.552-1.887-0.038L3.482,10.476C2.509,11.458,2,12.813,2,14.311C2,15.809,2.509,17.207,3.482,18.187z" />
+              </svg>
+            )}
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight text-white">
-            GitHub Visualizer
+            {platform === 'github' ? 'GitHub Stats' : 'LeetCode Stats'}
           </h1>
           <p className="mt-2 text-lg text-gray-400">
-            View your contribution graph or transform it into a retro arcade shooter.
+            {platform === 'github' 
+              ? 'View your contribution graph or transform it into a retro arcade shooter.' 
+              : 'Showcase your dynamically generated LeetCode stats.'}
           </p>
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-2xl p-6 sm:p-8">
+          <div className="flex justify-center mb-8">
+            <div className="flex bg-gray-800 p-1 rounded-lg border border-gray-700">
+              <button
+                onClick={() => {
+                  setPlatform('github');
+                  setUsername('zane-chen');
+                  setTheme('github');
+                  setGithubData(null);
+                  setLeetcodeDataReady(false);
+                }}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-md text-sm font-medium transition-colors ${
+                  platform === 'github' 
+                    ? 'bg-emerald-600 text-white shadow-sm' 
+                    : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50'
+                }`}
+              >
+                <Github size={18} />
+                GitHub
+              </button>
+              <button
+                onClick={() => {
+                  setPlatform('leetcode');
+                  setUsername('jacoblincool');
+                  setTheme('github');
+                  setViewMode('classic');
+                  setGithubData(null);
+                  setLeetcodeData(null);
+                  setLeetcodeDataReady(false);
+                }}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-md text-sm font-medium transition-colors ${
+                  platform === 'leetcode' 
+                    ? 'bg-yellow-600 text-white shadow-sm' 
+                    : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50'
+                }`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M22,14.355c0-0.742-0.564-1.346-1.26-1.346H10.676c-0.696,0-1.26,0.604-1.26,1.346s0.563,1.346,1.26,1.346H20.74C21.436,15.702,22,15.098,22,14.355z" />
+                  <path d="M3.482,18.187l4.313,4.361C8.768,23.527,10.113,24,11.598,24c1.485,0,2.83-0.512,3.805-1.494l2.588-2.637c0.51-0.514,0.492-1.365-0.039-1.9c-0.531-0.535-1.375-0.553-1.884-0.039l-2.676,2.607c-0.462,0.467-1.102,0.662-1.809,0.662s-1.346-0.195-1.81-0.662l-4.298-4.363c-0.463-0.467-0.696-1.15-0.696-1.863c0-0.713,0.233-1.357,0.696-1.824l4.285-4.38c0.463-0.467,1.116-0.645,1.822-0.645s1.346,0.195,1.809,0.662l2.676,2.606c0.51,0.515,1.354,0.497,1.885-0.038c0.531-0.536,0.549-1.387,0.039-1.901l-2.588-2.636c-0.649-0.646-1.471-1.116-2.392-1.33l-0.034-0.007l2.447-2.503c0.512-0.514,0.494-1.366-0.037-1.901c-0.531-0.535-1.376-0.552-1.887-0.038L3.482,10.476C2.509,11.458,2,12.813,2,14.311C2,15.809,2.509,17.207,3.482,18.187z" />
+                </svg>
+                LeetCode
+              </button>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-300">
-                  GitHub Username
+                  {platform === 'github' ? 'GitHub Username' : 'LeetCode Username'}
                 </label>
                 <div className="mt-2 relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -145,7 +242,7 @@ export default function App() {
                     id="username"
                     required
                     className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-8 sm:text-sm border-gray-700 rounded-md bg-gray-800 text-white py-3"
-                    placeholder="torvalds"
+                    placeholder={platform === 'github' ? 'torvalds' : 'jacoblincool'}
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                   />
@@ -169,7 +266,6 @@ export default function App() {
                 </select>
               </div>
               
-
               <div>
                 <label htmlFor="font" className="block text-sm font-medium text-gray-300">
                   Font Family
@@ -181,73 +277,126 @@ export default function App() {
                   value={font}
                   onChange={(e) => setFont(e.target.value)}
                 >
-                  <option value="inter">Inter (Default)</option>
+                  <option value="baloo_2">Baloo 2</option>
+                  <option value="inter">Inter</option>
+                  <option value="roboto">Roboto</option>
+                  <option value="Noto Sans Coptic">Noto Sans Coptic</option>
+                  <option value="milonga">Milonga</option>
                   <option value="mali">Mali</option>
-                  <option value="roboto mono">Roboto Mono</option>
-                  <option value="comic neue">Comic Neue</option>
+                  <option value="patrick_hand">Patrick Hand</option>
+                  <option value="ruthie">Ruthie</option>
+                  <option value="source_code_pro">Source Code Pro</option>
                 </select>
               </div>
-              <div className="flex items-center justify-between mt-4">
-                <label htmlFor="hideBorder" className="text-sm font-medium text-gray-300">
-                  Hide Outer Border
-                </label>
-                <button
-                  id="hideBorder"
-                  type="button"
-                  role="switch"
-                  aria-checked={hideBorder}
-                  onClick={() => setHideBorder(!hideBorder)}
-                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${hideBorder ? 'bg-emerald-500' : 'bg-gray-700'}`}
-                >
-                  <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${hideBorder ? 'translate-x-5' : 'translate-x-0'}`} />
-                </button>
-              </div>
-              <div className="flex items-center justify-between mt-4">
-                <label htmlFor="hideLanguages" className="text-sm font-medium text-gray-300">
-                  Hide Languages
-                </label>
-                <button
-                  id="hideLanguages"
-                  type="button"
-                  role="switch"
-                  aria-checked={hideLanguages}
-                  onClick={() => setHideLanguages(!hideLanguages)}
-                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${hideLanguages ? 'bg-emerald-500' : 'bg-gray-700'}`}
-                >
-                  <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${hideLanguages ? 'translate-x-5' : 'translate-x-0'}`} />
-                </button>
-              </div>
+              
               <div>
-                <label htmlFor="strategy" className="block text-sm font-medium text-gray-300">
-                  Attack Strategy
-                </label>
-                <select
-                  id="strategy"
-                  name="strategy"
-                  className="mt-2 block w-full pl-3 pr-10 py-3 text-base border-gray-700 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md bg-gray-800 text-white"
-                  value={strategy}
-                  onChange={(e) => setStrategy(e.target.value)}
-                >
-                  <option value="random">Random Attack</option>
-                  <option value="row">Row by Row</option>
-                  <option value="column">Column by Column</option>
-                </select>
+                <div className="flex items-center justify-between mt-4">
+                  <label htmlFor="hideBorder" className="text-sm font-medium text-gray-300">
+                    Hide Outer Border
+                  </label>
+                  <button
+                    id="hideBorder"
+                    type="button"
+                    role="switch"
+                    aria-checked={hideBorder}
+                    onClick={() => setHideBorder(!hideBorder)}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${hideBorder ? 'bg-emerald-500' : 'bg-gray-700'}`}
+                  >
+                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${hideBorder ? 'translate-x-5' : 'translate-x-0'}`} />
+                  </button>
+                </div>
               </div>
+
+              {platform === 'github' && (
+                <>
+                  <div className="flex items-center justify-between mt-4">
+                    <label htmlFor="hideLanguages" className="text-sm font-medium text-gray-300">
+                      Hide Languages
+                    </label>
+                    <button
+                      id="hideLanguages"
+                      type="button"
+                      role="switch"
+                      aria-checked={hideLanguages}
+                      onClick={() => setHideLanguages(!hideLanguages)}
+                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${hideLanguages ? 'bg-emerald-500' : 'bg-gray-700'}`}
+                    >
+                      <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${hideLanguages ? 'translate-x-5' : 'translate-x-0'}`} />
+                    </button>
+                  </div>
+                  <div>
+                    <label htmlFor="strategy" className="block text-sm font-medium text-gray-300">
+                      Attack Strategy
+                    </label>
+                    <select
+                      id="strategy"
+                      name="strategy"
+                      className="mt-2 block w-full pl-3 pr-10 py-3 text-base border-gray-700 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md bg-gray-800 text-white"
+                      value={strategy}
+                      onChange={(e) => setStrategy(e.target.value)}
+                    >
+                      <option value="random">Random Attack</option>
+                      <option value="row">Row by Row</option>
+                      <option value="column">Column by Column</option>
+                    </select>
+                  </div>
+                </>
+              )}
+
+              {platform === 'leetcode' && (
+                <>
+                  <div className="md:col-span-3">
+                    <label htmlFor="leetcodeSite" className="block text-sm font-medium text-gray-300">
+                      Source
+                    </label>
+                    <select
+                      id="leetcodeSite"
+                      name="leetcodeSite"
+                      className="mt-2 block w-full pl-3 pr-10 py-3 text-base border-gray-700 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md bg-gray-800 text-white"
+                      value={leetcodeSite}
+                      onChange={(e) => setLeetcodeSite(e.target.value)}
+                    >
+                      <option value="us">LeetCode</option>
+                      <option value="cn">LeetCode CN</option>
+                    </select>
+                  </div>
+                </>
+              )}
             </div>
 
-            <div className="flex justify-center">
+            <div className="flex justify-center gap-4">
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center px-8 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#3b82f6] hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {loading ? (
-                  <Loader2 className="animate-spin -ml-1 mr-2 h-5 w-5" />
-                ) : (
-                  <Play className="-ml-1 mr-2 h-5 w-5" fill="currentColor" />
-                )}
-                {loading ? 'Fetching...' : 'Generate Visualization'}
+                  <Loader2 className="animate-spin mr-2 h-4 w-4" />
+                ) : null}
+                {loading ? 'Previewing...' : 'Preview'}
               </button>
+              
+              {platform === 'leetcode' && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.open(getEmbedUrl(), '_blank');
+                    }}
+                    className="inline-flex items-center px-8 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#3b82f6] hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-gray-900 transition-colors"
+                  >
+                    Go
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopyEmbed}
+                    className="inline-flex items-center px-8 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#3b82f6] hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-gray-900 transition-colors"
+                  >
+                    {copiedEmbed ? <Check className="mr-2 h-4 w-4" /> : null}
+                    {copiedEmbed ? 'Copied' : 'Markdown'}
+                  </button>
+                </>
+              )}
             </div>
           </form>
 
@@ -275,50 +424,46 @@ export default function App() {
           )}
         </div>
 
-        {githubData && (
+        {((platform === 'github' && githubData) || (platform === 'leetcode' && leetcodeDataReady)) && (
           <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-2xl p-6 sm:p-8 overflow-hidden">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start sm:items-center gap-4 mb-6">
-              <div>
-                <h2 className="text-xl font-bold text-white">Target Acquired: {githubData.username}</h2>
-                <span className="inline-flex items-center px-3 py-1 mt-2 rounded-full text-sm font-medium bg-emerald-900/50 text-emerald-400 border border-emerald-800/50">
-                  {githubData.total_contributions} Contributions
-                </span>
-              </div>
+            <div className="flex flex-col sm:flex-row sm:justify-end sm:items-start sm:items-center gap-4 mb-6">
               
               <div className="flex flex-wrap items-center gap-2">
-                <div className="flex bg-gray-800 p-1 rounded-lg border border-gray-700">
-                  <button
-                    onClick={() => setViewMode('classic')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      viewMode === 'classic' 
-                        ? 'bg-gray-700 text-white shadow-sm' 
-                        : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50'
-                    }`}
-                  >
-                    <LayoutGrid size={16} />
-                    Classic Graph
-                  </button>
-                  <button
-                    onClick={() => setViewMode('shooter')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      viewMode === 'shooter' 
-                        ? 'bg-gray-700 text-white shadow-sm' 
-                        : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50'
-                    }`}
-                  >
-                    <Gamepad2 size={16} />
-                    Space Shooter
-                  </button>
-                </div>
+                {platform === 'github' && (
+                  <div className="flex bg-gray-800 p-1 rounded-lg border border-gray-700">
+                    <button
+                      onClick={() => setViewMode('classic')}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        viewMode === 'classic' 
+                          ? 'bg-gray-700 text-white shadow-sm' 
+                          : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50'
+                      }`}
+                    >
+                      <LayoutGrid size={16} />
+                      Classic Graph
+                    </button>
+                    <button
+                      onClick={() => setViewMode('shooter')}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        viewMode === 'shooter' 
+                          ? 'bg-gray-700 text-white shadow-sm' 
+                          : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50'
+                      }`}
+                    >
+                      <Gamepad2 size={16} />
+                      Space Shooter
+                    </button>
+                  </div>
+                )}
 
                 <button
                   onClick={handleCopyUrl}
-                  disabled={viewMode === 'shooter'}
-                  title={viewMode === 'shooter' ? 'Embedding is only supported in Classic mode' : 'Copy direct image URL'}
+                  disabled={platform === 'github' && viewMode === 'shooter'}
+                  title={platform === 'github' && viewMode === 'shooter' ? 'Embedding is only supported in Classic mode' : 'Copy direct image URL'}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
                     copiedUrl
                       ? 'bg-emerald-900/40 text-emerald-400 border-emerald-800'
-                      : viewMode === 'shooter'
+                      : (platform === 'github' && viewMode === 'shooter')
                       ? 'bg-gray-800/50 text-gray-600 border-gray-800 cursor-not-allowed'
                       : 'bg-gray-800 text-gray-300 hover:text-white hover:bg-gray-700 border-gray-700'
                   }`}
@@ -328,12 +473,12 @@ export default function App() {
                 </button>
                 <button
                   onClick={handleCopyEmbed}
-                  disabled={viewMode === 'shooter'}
-                  title={viewMode === 'shooter' ? 'Embedding is only supported in Classic mode' : 'Copy markdown embed link'}
+                  disabled={platform === 'github' && viewMode === 'shooter'}
+                  title={platform === 'github' && viewMode === 'shooter' ? 'Embedding is only supported in Classic mode' : 'Copy markdown embed link'}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
                     copiedEmbed
                       ? 'bg-emerald-900/40 text-emerald-400 border-emerald-800'
-                      : viewMode === 'shooter'
+                      : (platform === 'github' && viewMode === 'shooter')
                       ? 'bg-gray-800/50 text-gray-600 border-gray-800 cursor-not-allowed'
                       : 'bg-gray-800 text-gray-300 hover:text-white hover:bg-gray-700 border-gray-700'
                   }`}
@@ -347,20 +492,26 @@ export default function App() {
             <div 
               ref={graphRef}
               className={`w-full bg-black rounded-lg border border-gray-800 relative shadow-inner overflow-hidden flex items-center justify-center ${
-                viewMode === 'shooter' ? 'aspect-[86/23]' : ''
+                platform === 'github' && viewMode === 'shooter' ? 'aspect-[86/23]' : 'p-4 min-h-[550px]'
               }`}
             >
-              {viewMode === 'shooter' ? (
-                <SpaceShooter data={githubData} strategy={strategy} theme={theme} />
+              {platform === 'github' ? (
+                viewMode === 'shooter' ? (
+                  <SpaceShooter data={githubData} strategy={strategy} theme={theme} />
+                ) : (
+                  <ContributionGraph data={githubData} theme={theme} font={font} hideBorder={hideBorder} hideLanguages={hideLanguages} />
+                )
               ) : (
-                <ContributionGraph data={githubData} theme={theme} font={font} hideBorder={hideBorder} hideLanguages={hideLanguages} />
+                <LeetCodeGraph data={leetcodeData} theme={theme} font={font} hideBorder={hideBorder} />
               )}
             </div>
             
             <p className="mt-4 text-sm text-gray-500 text-center">
-              {viewMode === 'shooter' 
-                ? 'Simulation running natively in your browser using HTML5 Canvas.' 
-                : 'A clean, modern view of your GitHub contributions.'}
+              {platform === 'github'
+                ? (viewMode === 'shooter' 
+                  ? 'Simulation running natively in your browser using HTML5 Canvas.' 
+                  : 'A clean, modern view of your GitHub contributions.')
+                : 'A structured, native React visualization of your LeetCode stats.'}
             </p>
           </div>
         )}
@@ -368,3 +519,4 @@ export default function App() {
     </div>
   );
 }
+

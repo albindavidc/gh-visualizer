@@ -4,48 +4,33 @@ import { Item } from "../item";
 import { Extension } from "../types";
 
 export async function HeatmapExtension(generator: Generator): Promise<Extension> {
-    const pre_counts = new Promise<Record<string, number>>((resolve) => {
-        if (generator.config.site === "us") {
-            const lc = new LeetCode();
-            lc.once("receive-graphql", async (res) => {
-                try {
-                    const { data } = (await res.json()) as {
-                        data: { user: { calendar: { calendar: string } } };
-                    };
-                    const calendar = data?.user?.calendar?.calendar;
-                    resolve(calendar ? JSON.parse(calendar) : {});
-                } catch (e) {
-                    console.warn("Failed to parse calendar", e);
-                    resolve({});
-                }
-            });
-            lc.graphql({
-                operationName: "calendar",
-                query: `query calendar($username: String!, $year: Int) { user: matchedUser(username: $username) { calendar: userCalendar(year: $year) { calendar: submissionCalendar } } }`,
-                variables: { username: generator.config.username },
-            });
-        } else {
-            const lc = new LeetCodeCN();
-            lc.once("receive-graphql", async (res) => {
-                try {
-                    const { data } = (await res.json()) as {
-                        data: { calendar: { calendar: string } };
-                    };
-                    const calendar = data?.calendar?.calendar;
-                    resolve(calendar ? JSON.parse(calendar) : {});
-                } catch (e) {
-                    console.warn("Failed to parse calendar", e);
-                    resolve({});
-                }
-            });
-            lc.graphql(
-                {
+    const pre_counts = new Promise<Record<string, number>>(async (resolve) => {
+        try {
+            if (generator.config.site === "us") {
+                const lc = new LeetCode();
+                const { data } = await lc.graphql({
                     operationName: "calendar",
-                    query: `query calendar($username: String!, $year: Int) { calendar: userCalendar(userSlug: $username, year: $year) { calendar: submissionCalendar } }`,
+                    query: `query calendar($username: String!, $year: Int) { user: matchedUser(username: $username) { calendar: userCalendar(year: $year) { calendar: submissionCalendar } } }`,
                     variables: { username: generator.config.username },
-                },
-                "/graphql/noj-go/",
-            );
+                }) as { data: { user: { calendar: { calendar: string } } } };
+                const calendar = data?.user?.calendar?.calendar;
+                resolve(calendar ? JSON.parse(calendar) : {});
+            } else {
+                const lc = new LeetCodeCN();
+                const { data } = await lc.graphql(
+                    {
+                        operationName: "calendar",
+                        query: `query calendar($username: String!, $year: Int) { calendar: userCalendar(userSlug: $username, year: $year) { calendar: submissionCalendar } }`,
+                        variables: { username: generator.config.username },
+                    },
+                    "/graphql/noj-go/",
+                ) as { data: { calendar: { calendar: string } } };
+                const calendar = data?.calendar?.calendar;
+                resolve(calendar ? JSON.parse(calendar) : {});
+            }
+        } catch (e) {
+            console.warn("Failed to fetch/parse calendar", e);
+            resolve({});
         }
     });
 

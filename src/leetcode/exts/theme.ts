@@ -6,6 +6,7 @@ import forest from "../theme/forest";
 import light from "../theme/light";
 import nord from "../theme/nord";
 import radical from "../theme/radical";
+import sleek from "../theme/sleek";
 import transparent from "../theme/transparent";
 import unicorn from "../theme/unicorn";
 import wtf from "../theme/wtf";
@@ -30,6 +31,7 @@ export const supported: Record<string, Theme> = {
     radical,
     chartreuse,
     catppuccinMocha,
+    sleek,
 };
 
 export function ThemeExtension(): Extension {

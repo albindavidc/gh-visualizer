@@ -52,6 +52,7 @@ export class Query {
                 }
                 user: matchedUser(username: $username) {
                     username
+                    submissionCalendar
                     profile { 
                         realname: realName 
                         about: aboutMe 
@@ -111,6 +112,7 @@ export class Query {
                 ranking: data.contest.ranking,
                 badge: data.contest.badge?.name || "",
             },
+            submissionCalendar: data.user.submissionCalendar,
         };
 
         return result;

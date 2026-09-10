@@ -90,9 +90,14 @@ export function generateSvg(username: string, totalContributions: number, weeks:
 
   const fontFamilies: Record<string, string> = {
     'inter': '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+    'roboto': '"Roboto", sans-serif',
+    'noto sans coptic': '"Noto Sans Coptic", sans-serif',
+    'milonga': '"Milonga", cursive',
     'mali': '"Mali", cursive',
-    'roboto mono': '"Roboto Mono", monospace',
-    'comic neue': '"Comic Neue", cursive',
+    'patrick_hand': '"Patrick Hand", cursive',
+    'ruthie': '"Ruthie", cursive',
+    'source_code_pro': '"Source Code Pro", monospace',
+    'baloo_2': '"Baloo 2", cursive',
   };
   const fontFamily = fontFamilies[fontName.toLowerCase()] || fontFamilies.inter;
   const fontImport = FONTS_CSS;

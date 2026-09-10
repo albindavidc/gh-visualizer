@@ -6,7 +6,7 @@ import { FontExtension } from "./exts/font";
 import { HeatmapExtension } from "./exts/heatmap";
 import { RemoteStyleExtension } from "./exts/remote-style";
 import { ThemeExtension, supported } from "./exts/theme";
-import { Config } from "./types";
+import type { Config } from "./types";
 
 /**
  * Generate a card.
@@ -33,7 +33,7 @@ export default generate;
 export {
     ActivityExtension,
     AnimationExtension,
-    Config,
+ 
     ContestExtension,
     FontExtension,
     Generator,
@@ -42,3 +42,4 @@ export {
     ThemeExtension,
     supported,
 };
+export type { Config };

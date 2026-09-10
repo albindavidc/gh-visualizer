@@ -25,9 +25,14 @@ export function ContributionGraph({ data, theme = 'github', font = 'inter', hide
 
   const fontFamilies: Record<string, string> = {
     'inter': '"Inter", sans-serif',
+    'roboto': '"Roboto", sans-serif',
+    'noto sans coptic': '"Noto Sans Coptic", sans-serif',
+    'milonga': '"Milonga", cursive',
     'mali': '"Mali", cursive',
-    'roboto mono': '"Roboto Mono", monospace',
-    'comic neue': '"Comic Neue", cursive',
+    'patrick_hand': '"Patrick Hand", cursive',
+    'ruthie': '"Ruthie", cursive',
+    'source_code_pro': '"Source Code Pro", monospace',
+    'baloo_2': '"Baloo 2", cursive',
   };
   const fontFamily = fontFamilies[font.toLowerCase()] || fontFamilies.inter;
 
@@ -38,33 +43,40 @@ const containerRef = React.useRef<HTMLDivElement>(null);
   const [containerHeight, setContainerHeight] = React.useState<number | undefined>(undefined);
 
   React.useEffect(() => {
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const width = entry.contentRect.width;
-        if (width < 800) {
-          const newScale = width / 800;
-          setScale(newScale);
-          if (contentRef.current) {
-            setContainerHeight(contentRef.current.offsetHeight * newScale + 10);
-          }
-        } else {
-          setScale(1);
-          setContainerHeight(undefined);
-        }
+    const updateSize = () => {
+      if (!containerRef.current || !contentRef.current) return;
+      const width = containerRef.current.getBoundingClientRect().width;
+      if (width < 840) {
+        const newScale = width / 840;
+        setScale(newScale);
+        setContainerHeight(contentRef.current.offsetHeight * newScale + 10);
+      } else {
+        setScale(1);
+        setContainerHeight(undefined);
       }
+    };
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateSize();
     });
     
     if (containerRef.current) {
       resizeObserver.observe(containerRef.current);
     }
+    if (contentRef.current) {
+      resizeObserver.observe(contentRef.current);
+    }
+    
+    // Call once to ensure it runs immediately when data changes
+    updateSize();
     
     return () => resizeObserver.disconnect();
-  }, []);
+  }, [data]);
 
 
   return (
     <div 
-      className={`w-full flex flex-col items-center justify-center p-8 rounded-lg ${!hideBorder ? 'border border-gray-800' : ''}`}
+      className={`w-full flex flex-col items-center justify-center min-h-[550px] p-8 rounded-lg ${!hideBorder ? 'border border-gray-800' : ''}`}
       style={{ backgroundColor: currentTheme.bg, fontFamily }}
 
     >
@@ -186,8 +198,8 @@ const containerRef = React.useRef<HTMLDivElement>(null);
       )}
 
       {/* Heatmap Section */}
-      <div className="w-full max-w-[800px] flex justify-center overflow-hidden" ref={containerRef} style={{ height: containerHeight }}>
-        <div ref={contentRef} style={{ transform: `scale(${scale})`, transformOrigin: 'top center', width: '800px' }}>
+      <div className="w-full max-w-[840px] flex justify-center overflow-hidden" ref={containerRef} style={{ height: containerHeight }}>
+        <div ref={contentRef} style={{ transform: `scale(${scale})`, transformOrigin: 'top center', width: '840px', minWidth: '840px', flexShrink: 0 }}>
           <div className="text-lg mb-4" style={{ color: primaryColor }}>
             Heatmap (Last 52 Weeks)
           </div>

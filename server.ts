@@ -180,6 +180,46 @@ app.get("/api/graph", async (req, res) => {
   }
 });
 
+import { generate as generateLeetCode } from "./src/leetcode/index.ts";
+import Query from "./src/leetcode/query.ts";
+
+app.get("/api/leetcode-data", async (req, res) => {
+  try {
+    const username = req.query.username as string;
+    if (!username) return res.status(400).send("Username is required");
+    
+    const data = await Query.us(username);
+    res.json(data);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Failed to fetch data from LeetCode" });
+  }
+});
+
+app.get("/api/leetcode", async (req, res) => {
+  try {
+    const username = req.query.username as string;
+    if (!username) return res.status(400).send("Username is required");
+    const themeName = (req.query.theme as string) || 'github';
+    const fontName = (req.query.font as string) || 'inter';
+    const site = req.query.site as string; // 'us' or 'cn'
+    const hideBorder = req.query.hide_border === 'true';
+
+    // Fetch data using the same query as the frontend
+    const data = site === 'cn' ? await Query.cn(username) : await Query.us(username);
+    
+    // Import the new SVG generator
+    const { generateLeetcodeSvg } = await import("./src/utils/leetcodeSvgGenerator.ts");
+    const svg = generateLeetcodeSvg(username, data, themeName, fontName, hideBorder);
+
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0');
+    res.status(200).send(svg);
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).send(err.message || "Internal Server Error");
+  }
+});
+
 if (process.env.NODE_ENV !== "production") {
   const viteMod = "vite";
   import(viteMod).then(async ({ createServer: createViteServer }) => {
