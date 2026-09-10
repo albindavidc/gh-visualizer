@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 
-import { generateSvg } from "./src/utils/svgGenerator.js";
+import { generateSvg } from "./src/utils/svgGenerator.js";import fs from "fs";try { const envFile = fs.readFileSync(path.join(process.cwd(), ".env"), "utf8"); const match = envFile.match(/^GH_TOKEN=(.*)$/m); if(match && match[1]) process.env.GH_TOKEN = match[1].trim(); } catch(e){}
 
 const NUM_WEEKS = 52;
 
