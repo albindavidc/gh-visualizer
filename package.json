@@ -10,6 +10,7 @@
     "test": "tsx scripts/smoke.test.ts"
   },
   "dependencies": {
+    "@vercel/global-config": "^1.5.1",
     "clsx": "^2.1.1",
     "express": "^4.21.0",
     "framer-motion": "^11.9.0",

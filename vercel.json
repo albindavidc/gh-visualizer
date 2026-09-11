@@ -9,5 +9,11 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/refresh-github",
+      "schedule": "0 1 * * *"
+    }
   ]
 }
