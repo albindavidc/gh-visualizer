@@ -172,11 +172,11 @@ export default function App() {
             )}
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight text-white">
-            {platform === 'github' ? 'GitHub Stats' : 'LeetCode Stats'}
+            Stats Visualizer
           </h1>
           <p className="mt-2 text-lg text-gray-400">
             {platform === 'github' 
-              ? 'View your contribution graph or transform it into a retro arcade shooter.' 
+              ? 'View your GitHub contribution graph or transform it into a retro arcade shooter.' 
               : 'Showcase your dynamically generated LeetCode stats.'}
           </p>
         </div>

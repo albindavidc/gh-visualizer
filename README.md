@@ -1,179 +1,71 @@
-# GitHub Visualizer 🚀
+# 📊 Stats Visualizer
 
-Transform your GitHub contribution graph into an epic space shooter game, or view it as a classic visualization! 
+A beautiful, full-stack web application to visualize, customize, and gamify your developer statistics across GitHub and LeetCode. 
 
-![Example Game](example.gif)
+Whether you want to show off your longest coding streaks, visualize your problem-solving progress, or blast your contribution history in an interactive space shooter, Stats Visualizer makes your data look incredible.
 
-## Features
+<div align="center">
+  <img src="public/favicon.svg" alt="Stats Visualizer" width="120" />
+</div>
 
-- **Space Shooter Mode**: Turn your coding history into an interactive Galaga-style shooter. Enemies spawn based on your contributions!
-- **Classic Graph Mode**: A sleek, modern `#0A0A0A` dark-themed view of your classic GitHub contribution graph.
+## ✨ Features
 
-## Usage
+- 🐙 **GitHub Contributions**: View your yearly heatmap, longest streaks, and top programming languages in a sleek, modern layout.
+- 👾 **Space Shooter Mode**: Turn your GitHub contribution graph into a playable HTML5 retro arcade space shooter!
+- 💻 **LeetCode Metrics**: Showcase your problem-solving progress with beautiful completion rings, difficulty breakdowns, and a 52-week activity heatmap.
+- 🎨 **Premium Themes**: Choose from multiple built-in color schemes including Sleek, Dracula, Ocean, Amber, and Classic GitHub.
+- ✍️ **Typography Controls**: Customize the visualizer with an array of beautiful Google Fonts (e.g., Patrick Hand, Source Code Pro, Baloo 2).
+- ⚙️ **Flexible UI Toggles**: Effortlessly hide borders or languages to craft the perfect minimalist embed.
+- 🔗 **Markdown Embeds**: Generate dynamic URL links and Markdown snippets directly from the UI to paste into your personal README or portfolio.
+- ⚡ **Full-Stack Architecture**: Powered by React, Vite, Tailwind CSS on the frontend, and a Node.js/Express backend that securely proxies API requests.
 
-### Onetime Generation
+## 🛠️ Tech Stack
 
-A [web interface](https://gh-space-shooter.kiyo-n-zane.com) is available for on-demand GIF generation without installing anything locally. 
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Lucide React
+- **Backend**: Node.js, Express (API Proxy for secure GitHub and LeetCode data fetching)
+- **Deployment**: Configured for rapid cloud-native deployment with optimized static bundling via ESBuild.
 
-### GitHub Action
+## 🚀 Getting Started
 
-Automatically update your game GIF daily using GitHub Actions! Add this workflow to your repository at `.github/workflows/update-game.yml`:
+### Prerequisites
+- Node.js 18+
+- GitHub Personal Access Token (for the backend API to fetch GitHub stats without strict rate limits)
 
-```yaml
-name: Update Space Shooter Game
+### Setup
 
-on:
-  schedule:
-    - cron: '0 0 * * *'  # Daily at midnight UTC
-  workflow_dispatch:  # Allow manual trigger
-
-permissions:
-  contents: write
-
-jobs:
-  update-game:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 2  # This is crucial!
-
-      - uses: czl9707/gh-space-shooter@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          output-path: 'game.gif'
-          strategy: 'random'
-```
-
-Then display it in your README:
-```markdown
-![My GitHub Game](game.gif)
-```
-
-> **Github Action V2 Change:** : By default, the action amends the previous commit if it only contains the game file with the same commit message. This prevents repository bloat from daily commits. Set `no-amend: true` to disable this behavior.
-> Need `fetch-depth: 2` in `actions/checkout@v6` to have this working.
-
-**Action Inputs:**
-- `github-token` (required): GitHub token for fetching contributions
-- `username` (optional): Username to generate game for (defaults to repo owner)
-- `output-path` (optional): Where to save the animation, supports `.gif` or `.webp` (default: `gh-space-shooter.gif`)
-- `strategy` (optional): Attack pattern - `column`, `row`, or `random` (default: `random`)
-- `fps` (optional): Frames per second for the animation (default: `40`)
-- `no-amend` (optional): Set to `true` to disable amending previous commits (default: `false`)
-- `no-commit` (optional): Set to `true` to skip committing and pushing entirely; the generated file is left in the workspace so you can commit it yourself, e.g. to batch several action runs into one commit (default: `false`)
-- `commit-message` (optional): Commit message for the update
-
-### From PyPI
-
-```bash
-pip install gh-space-shooter
-```
-
-### From Source
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/gh-space-shooter.git
-cd gh-space-shooter
-
-# Install with uv
-uv sync
-
-# Or with pip
-pip install -e .
-```
-
-## Setup
-
-1. Create a GitHub Personal Access Token:
-   - Go to https://github.com/settings/tokens
-   - Click "Generate new token (classic)"
-   - Select scopes: `read:user`
-   - Copy the generated token
-
-2. Set up your environment:
+1. **Clone & Install**
    ```bash
-   # Copy the example env file
-   touch .env
-   echo "GH_TOKEN=your_token_here" >> .env
+   npm install
    ```
 
-   Alternatively, export the token directly:
-   ```bash
-   export GH_TOKEN=your_token_here
+2. **Environment Variables**
+   Create a `.env` file in the root directory and add your GitHub token:
+   ```env
+   GH_TOKEN=your_github_personal_access_token
    ```
 
-## CLI Usage
+3. **Run the Development Server**
+   ```bash
+   npm run dev
+   ```
+   The application will be available at `http://localhost:3000`.
 
-### Generate Your Game Animation (GIF or WebP)
-
-Transform your GitHub contributions into an epic space shooter!
-
-```bash
-# Basic usage - generates username-gh-space-shooter.gif
-gh-space-shooter <username>
-
-# Examples
-gh-space-shooter torvalds
-gh-space-shooter octocat
-
-# Specify custom output filename (GIF or WebP)
-gh-space-shooter torvalds --output my-epic-game.gif
-gh-space-shooter torvalds -o my-game.webp
-
-# Choose enemy attack strategy
-gh-space-shooter torvalds --strategy row      # Enemies attack in rows
-gh-space-shooter torvalds -s random           # Random chaos (default)
-
-# Adjust animation frame rate
-gh-space-shooter torvalds --fps 25            # Lower Frame rate, Smaller file size
-gh-space-shooter torvalds --fps 40            # Default Frame rate, Larger file size
-
-# Stop the animation earlier
-gh-space-shooter torvalds --max-frame 200     # Stop after 200 frames
-```
-
-This creates an animated GIF showing:
-- Your contribution graph as enemies (more contributions = stronger enemies)
-- A Galaga-style spaceship battling through your coding history
-- Enemy attack patterns based on your chosen strategy
-- Smooth animations with randomized particle effects
-- Your contribution stats displayed in the console
-
-### Advanced Options
+### Building for Production
 
 ```bash
-# Save raw contribution data to JSON
-gh-space-shooter torvalds --raw-output data.json
-
-# Load from previously saved JSON (saves API rate limits)
-gh-space-shooter --raw-input data.json --output game.webp
-
-# Combine options
-gh-space-shooter torvalds -o game.webp -ro data.json -s column
+npm run build
+npm run start
 ```
+This will compile the frontend via Vite, bundle the Express server using ESBuild, and serve the highly optimized full-stack application.
 
-### Data Format
+## 🎮 How to Use
 
-When saved to JSON, the data includes:
-```json
-{
-  "username": "torvalds",
-  "total_contributions": 1234,
-  "weeks": [
-    {
-      "days": [
-        {
-          "date": "2024-01-01",
-          "count": 5,
-          "level": 2
-        }
-      ]
-    }
-  ]
-}
-```
+1. Enter your **GitHub** or **LeetCode** username in the search bar.
+2. Select your desired platform.
+3. Toggle between **Classic View** and **Arcade Shooter Mode** (GitHub only).
+4. Customize the **Theme**, **Font**, and layout toggles.
+5. Click **Copy Embed** to grab a Markdown snippet for your profile!
 
-## License
+## 📜 License
 
 MIT

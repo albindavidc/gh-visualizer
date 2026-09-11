@@ -104,7 +104,7 @@ export function LeetCodeGraph({ data, theme = 'github', font = 'inter', hideBord
       </div>
 
       {/* Top Stats Section */}
-      <div className="w-full max-w-[800px] flex items-center justify-center mb-10 gap-20">
+      <div className="w-full max-w-[800px] flex items-center justify-center mb-10 gap-16">
         
         {/* Completion Ring */}
         <div className="flex flex-col items-center justify-center text-center relative">
@@ -140,16 +140,19 @@ export function LeetCodeGraph({ data, theme = 'github', font = 'inter', hideBord
           </div>
         </div>
 
+        {/* Separator */}
+        <div className="h-32 w-px" style={{ backgroundColor: '#1f2937' }} />
+
         {/* Difficulty Breakdown with Progress Bars */}
-        <div className="flex flex-col justify-center w-full max-w-[320px] gap-6">
+        <div className="flex flex-col justify-center w-full max-w-[480px] gap-6">
            
            {/* Easy */}
            <div className="flex flex-col w-full">
              <div className="flex justify-between items-end mb-2">
-               <span className="text-xl font-bold" style={{ color: currentTheme.levels[2] || '#00b8a3' }}>Easy</span>
-               <span className="font-bold text-lg" style={{ color: currentTheme.levels[2] || subtitleColor }}>{data.problem?.easy?.solved} <span className="font-medium text-base opacity-60" style={{ color: currentTheme.levels[2] || '#00b8a3' }}>/ {data.problem?.easy?.total}</span></span>
+               <span className="text-base font-bold" style={{ color: currentTheme.levels[2] || '#00b8a3' }}>Easy</span>
+               <span className="font-bold text-base" style={{ color: currentTheme.levels[2] || subtitleColor }}>{data.problem?.easy?.solved} <span className="font-medium text-sm opacity-60" style={{ color: currentTheme.levels[2] || '#00b8a3' }}>/ {data.problem?.easy?.total}</span></span>
              </div>
-             <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: currentTheme.levels[1] || '#2d333b' }}>
+             <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: currentTheme.levels[1] || '#2d333b' }}>
                <div className="h-full rounded-full" style={{ width: `${(data.problem?.easy?.solved / (data.problem?.easy?.total || 1)) * 100}%`, backgroundColor: currentTheme.levels[2] || '#00b8a3' }} />
              </div>
            </div>
@@ -157,10 +160,10 @@ export function LeetCodeGraph({ data, theme = 'github', font = 'inter', hideBord
            {/* Medium */}
            <div className="flex flex-col w-full">
              <div className="flex justify-between items-end mb-2">
-               <span className="text-xl font-bold" style={{ color: currentTheme.levels[3] || '#ffc01e' }}>Medium</span>
-               <span className="font-bold text-lg" style={{ color: currentTheme.levels[3] || subtitleColor }}>{data.problem?.medium?.solved} <span className="font-medium text-base opacity-60" style={{ color: currentTheme.levels[3] || '#ffc01e' }}>/ {data.problem?.medium?.total}</span></span>
+               <span className="text-base font-bold" style={{ color: currentTheme.levels[3] || '#ffc01e' }}>Medium</span>
+               <span className="font-bold text-base" style={{ color: currentTheme.levels[3] || subtitleColor }}>{data.problem?.medium?.solved} <span className="font-medium text-sm opacity-60" style={{ color: currentTheme.levels[3] || '#ffc01e' }}>/ {data.problem?.medium?.total}</span></span>
              </div>
-             <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: currentTheme.levels[1] || '#2d333b' }}>
+             <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: currentTheme.levels[1] || '#2d333b' }}>
                <div className="h-full rounded-full" style={{ width: `${(data.problem?.medium?.solved / (data.problem?.medium?.total || 1)) * 100}%`, backgroundColor: currentTheme.levels[3] || '#ffc01e' }} />
              </div>
            </div>
@@ -168,10 +171,10 @@ export function LeetCodeGraph({ data, theme = 'github', font = 'inter', hideBord
            {/* Hard */}
            <div className="flex flex-col w-full">
              <div className="flex justify-between items-end mb-2">
-               <span className="text-xl font-bold" style={{ color: currentTheme.levels[4] || '#ef4743' }}>Hard</span>
-               <span className="font-bold text-lg" style={{ color: currentTheme.levels[4] || subtitleColor }}>{data.problem?.hard?.solved} <span className="font-medium text-base opacity-60" style={{ color: currentTheme.levels[4] || '#ef4743' }}>/ {data.problem?.hard?.total}</span></span>
+               <span className="text-base font-bold" style={{ color: currentTheme.levels[4] || '#ef4743' }}>Hard</span>
+               <span className="font-bold text-base" style={{ color: currentTheme.levels[4] || subtitleColor }}>{data.problem?.hard?.solved} <span className="font-medium text-sm opacity-60" style={{ color: currentTheme.levels[4] || '#ef4743' }}>/ {data.problem?.hard?.total}</span></span>
              </div>
-             <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: currentTheme.levels[1] || '#2d333b' }}>
+             <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: currentTheme.levels[1] || '#2d333b' }}>
                <div className="h-full rounded-full" style={{ width: `${(data.problem?.hard?.solved / (data.problem?.hard?.total || 1)) * 100}%`, backgroundColor: currentTheme.levels[4] || '#ef4743' }} />
              </div>
            </div>
