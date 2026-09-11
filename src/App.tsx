@@ -426,12 +426,12 @@ export default function App() {
 
                 <button
                   onClick={handleCopyUrl}
-                  disabled={platform === 'github' && viewMode === 'shooter'}
-                  title={platform === 'github' && viewMode === 'shooter' ? 'Embedding is only supported in Classic mode' : 'Copy direct image URL'}
+                  disabled={true}
+                  title={'Copy direct image URL'}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
                     copiedUrl
                       ? 'bg-emerald-900/40 text-emerald-400 border-emerald-800'
-                      : (platform === 'github' && viewMode === 'shooter')
+                      : true
                       ? 'bg-gray-800/50 text-gray-600 border-gray-800 cursor-not-allowed'
                       : 'bg-gray-800 text-gray-300 hover:text-white hover:bg-gray-700 border-gray-700'
                   }`}
@@ -441,12 +441,12 @@ export default function App() {
                 </button>
                 <button
                   onClick={handleCopyEmbed}
-                  disabled={platform === 'github' && viewMode === 'shooter'}
-                  title={platform === 'github' && viewMode === 'shooter' ? 'Embedding is only supported in Classic mode' : 'Copy markdown embed link'}
+                  disabled={true}
+                  title={'Copy markdown embed link'}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
                     copiedEmbed
                       ? 'bg-emerald-900/40 text-emerald-400 border-emerald-800'
-                      : (platform === 'github' && viewMode === 'shooter')
+                      : true
                       ? 'bg-gray-800/50 text-gray-600 border-gray-800 cursor-not-allowed'
                       : 'bg-gray-800 text-gray-300 hover:text-white hover:bg-gray-700 border-gray-700'
                   }`}
