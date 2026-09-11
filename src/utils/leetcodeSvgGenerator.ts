@@ -93,6 +93,8 @@ export function generateLeetcodeSvg(
   const cardHeight = heatmapDatesY + padding;
   const heatmapXOffset = Math.max(padding, cardWidth / 2 - heatmapWidth / 2);
 
+  const barsAreaWidth = cardWidth - padding - 225 - padding;
+
   const svg = `
 <svg xmlns="http://www.w3.org/2000/svg" width="${cardWidth}" height="${cardHeight}" viewBox="0 0 ${cardWidth} ${cardHeight}">
   <defs>
@@ -134,7 +136,7 @@ export function generateLeetcodeSvg(
   </g>
 
   <!-- Top Stats Section -->
-  <g transform="translate(${cardWidth / 2 - 265}, 120)" class="fade-in delay-1">
+  <g transform="translate(${padding}, 120)" class="fade-in delay-1">
     <!-- Ring -->
     <g transform="translate(0, 0)">
       <circle cx="80" cy="80" r="70" fill="none" stroke="${borderColor}" stroke-width="8" />
@@ -143,32 +145,32 @@ export function generateLeetcodeSvg(
     </g>
 
     <!-- Vertical Divider -->
-    <rect x="170" y="5" width="1" height="150" fill="#1f2937" class="fade-in delay-1" />
+    <rect x="190" y="5" width="1" height="150" fill="#1f2937" class="fade-in delay-1" />
 
     <!-- Difficulty Bars -->
-    <g transform="translate(210, 20)">
+    <g transform="translate(225, 20)">
       <!-- Easy -->
       <g transform="translate(0, 0)">
         <text x="0" y="0" fill="${easyColor}" font-size="16" font-weight="bold">Easy</text>
-        <text x="320" y="0" fill="${subtitleColor}" font-size="16" font-weight="bold" text-anchor="end">${easySolved} <tspan fill="${easyColor}" font-size="14" font-weight="500" opacity="0.6">/ ${data.problem?.easy?.total || 0}</tspan></text>
-        <rect x="0" y="12" width="320" height="6" rx="3" ry="3" fill="${borderColor}" />
-        <rect x="0" y="12" width="${Math.max((easySolved / easyTotal) * 320, 0)}" height="6" rx="3" ry="3" fill="${easyColor}" />
+        <text x="${barsAreaWidth}" y="0" fill="${subtitleColor}" font-size="16" font-weight="bold" text-anchor="end">${easySolved} <tspan fill="${easyColor}" font-size="14" font-weight="500" opacity="0.6">/ ${data.problem?.easy?.total || 0}</tspan></text>
+        <rect x="0" y="12" width="${barsAreaWidth}" height="6" rx="3" ry="3" fill="${borderColor}" />
+        <rect x="0" y="12" width="${Math.max((easySolved / easyTotal) * barsAreaWidth, 0)}" height="6" rx="3" ry="3" fill="${easyColor}" />
       </g>
       
       <!-- Medium -->
-      <g transform="translate(0, 48)">
+      <g transform="translate(0, 60)">
         <text x="0" y="0" fill="${mediumColor}" font-size="16" font-weight="bold">Medium</text>
-        <text x="320" y="0" fill="${subtitleColor}" font-size="16" font-weight="bold" text-anchor="end">${mediumSolved} <tspan fill="${mediumColor}" font-size="14" font-weight="500" opacity="0.6">/ ${data.problem?.medium?.total || 0}</tspan></text>
-        <rect x="0" y="12" width="320" height="6" rx="3" ry="3" fill="${borderColor}" />
-        <rect x="0" y="12" width="${Math.max((mediumSolved / mediumTotal) * 320, 0)}" height="6" rx="3" ry="3" fill="${mediumColor}" />
+        <text x="${barsAreaWidth}" y="0" fill="${subtitleColor}" font-size="16" font-weight="bold" text-anchor="end">${mediumSolved} <tspan fill="${mediumColor}" font-size="14" font-weight="500" opacity="0.6">/ ${data.problem?.medium?.total || 0}</tspan></text>
+        <rect x="0" y="12" width="${barsAreaWidth}" height="6" rx="3" ry="3" fill="${borderColor}" />
+        <rect x="0" y="12" width="${Math.max((mediumSolved / mediumTotal) * barsAreaWidth, 0)}" height="6" rx="3" ry="3" fill="${mediumColor}" />
       </g>
 
       <!-- Hard -->
-      <g transform="translate(0, 96)">
+      <g transform="translate(0, 120)">
         <text x="0" y="0" fill="${hardColor}" font-size="16" font-weight="bold">Hard</text>
-        <text x="320" y="0" fill="${subtitleColor}" font-size="16" font-weight="bold" text-anchor="end">${hardSolved} <tspan fill="${hardColor}" font-size="14" font-weight="500" opacity="0.6">/ ${data.problem?.hard?.total || 0}</tspan></text>
-        <rect x="0" y="12" width="320" height="6" rx="3" ry="3" fill="${borderColor}" />
-        <rect x="0" y="12" width="${Math.max((hardSolved / hardTotal) * 320, 0)}" height="6" rx="3" ry="3" fill="${hardColor}" />
+        <text x="${barsAreaWidth}" y="0" fill="${subtitleColor}" font-size="16" font-weight="bold" text-anchor="end">${hardSolved} <tspan fill="${hardColor}" font-size="14" font-weight="500" opacity="0.6">/ ${data.problem?.hard?.total || 0}</tspan></text>
+        <rect x="0" y="12" width="${barsAreaWidth}" height="6" rx="3" ry="3" fill="${borderColor}" />
+        <rect x="0" y="12" width="${Math.max((hardSolved / hardTotal) * barsAreaWidth, 0)}" height="6" rx="3" ry="3" fill="${hardColor}" />
       </g>
     </g>
   </g>
