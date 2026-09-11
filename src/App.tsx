@@ -29,7 +29,7 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     const plat = params.get('platform') as 'github' | 'leetcode';
     if (plat === 'github' || plat === 'leetcode') setPlatform(plat);
-    const user = params.get('username') || (plat === 'leetcode' ? 'jacoblincool' : 'zane-chen');
+    const user = params.get('username') || (plat === 'leetcode' ? 'albindavidc' : 'albindavidc');
     setUsername(user);
     const mode = params.get('mode');
     if (mode === 'shooter' || mode === 'classic') {
@@ -187,7 +187,7 @@ export default function App() {
               <button
                 onClick={() => {
                   setPlatform('github');
-                  setUsername('zane-chen');
+                  setUsername('albindavidc');
                   setTheme('github');
                   setGithubData(null);
                   setLeetcodeDataReady(false);
@@ -204,7 +204,7 @@ export default function App() {
               <button
                 onClick={() => {
                   setPlatform('leetcode');
-                  setUsername('jacoblincool');
+                  setUsername('albindavidc');
                   setTheme('github');
                   setViewMode('classic');
                   setGithubData(null);
@@ -242,7 +242,7 @@ export default function App() {
                     id="username"
                     required
                     className="focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-8 sm:text-sm border-gray-700 rounded-md bg-gray-800 text-white py-3"
-                    placeholder={platform === 'github' ? 'torvalds' : 'jacoblincool'}
+                    placeholder={platform === 'github' ? 'albindavidc' : 'albindavidc'}
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                   />
@@ -290,7 +290,10 @@ export default function App() {
               </div>
               
               <div>
-                <div className="flex items-center justify-between mt-4">
+                <label className="block text-sm font-medium text-transparent select-none hidden md:block" aria-hidden="true">
+                  Spacer
+                </label>
+                <div className="flex items-center justify-between md:mt-2 md:py-3 mt-4">
                   <label htmlFor="hideBorder" className="text-sm font-medium text-gray-300">
                     Hide Outer Border
                   </label>
@@ -309,20 +312,25 @@ export default function App() {
 
               {platform === 'github' && (
                 <>
-                  <div className="flex items-center justify-between mt-4">
-                    <label htmlFor="hideLanguages" className="text-sm font-medium text-gray-300">
-                      Hide Languages
+                  <div>
+                    <label className="block text-sm font-medium text-transparent select-none hidden md:block" aria-hidden="true">
+                      Spacer
                     </label>
-                    <button
-                      id="hideLanguages"
-                      type="button"
-                      role="switch"
-                      aria-checked={hideLanguages}
-                      onClick={() => setHideLanguages(!hideLanguages)}
-                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${hideLanguages ? 'bg-emerald-500' : 'bg-gray-700'}`}
-                    >
-                      <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${hideLanguages ? 'translate-x-5' : 'translate-x-0'}`} />
-                    </button>
+                    <div className="flex items-center justify-between md:mt-2 md:py-3 mt-4">
+                      <label htmlFor="hideLanguages" className="text-sm font-medium text-gray-300">
+                        Hide Languages
+                      </label>
+                      <button
+                        id="hideLanguages"
+                        type="button"
+                        role="switch"
+                        aria-checked={hideLanguages}
+                        onClick={() => setHideLanguages(!hideLanguages)}
+                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${hideLanguages ? 'bg-emerald-500' : 'bg-gray-700'}`}
+                      >
+                        <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${hideLanguages ? 'translate-x-5' : 'translate-x-0'}`} />
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <label htmlFor="strategy" className="block text-sm font-medium text-gray-300">
@@ -343,25 +351,7 @@ export default function App() {
                 </>
               )}
 
-              {platform === 'leetcode' && (
-                <>
-                  <div className="md:col-span-3">
-                    <label htmlFor="leetcodeSite" className="block text-sm font-medium text-gray-300">
-                      Source
-                    </label>
-                    <select
-                      id="leetcodeSite"
-                      name="leetcodeSite"
-                      className="mt-2 block w-full pl-3 pr-10 py-3 text-base border-gray-700 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md bg-gray-800 text-white"
-                      value={leetcodeSite}
-                      onChange={(e) => setLeetcodeSite(e.target.value)}
-                    >
-                      <option value="us">LeetCode</option>
-                      <option value="cn">LeetCode CN</option>
-                    </select>
-                  </div>
-                </>
-              )}
+
             </div>
 
             <div className="flex justify-center gap-4">
@@ -375,28 +365,6 @@ export default function App() {
                 ) : null}
                 {loading ? 'Previewing...' : 'Preview'}
               </button>
-              
-              {platform === 'leetcode' && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      window.open(getEmbedUrl(), '_blank');
-                    }}
-                    className="inline-flex items-center px-8 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#3b82f6] hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-gray-900 transition-colors"
-                  >
-                    Go
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleCopyEmbed}
-                    className="inline-flex items-center px-8 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#3b82f6] hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-gray-900 transition-colors"
-                  >
-                    {copiedEmbed ? <Check className="mr-2 h-4 w-4" /> : null}
-                    {copiedEmbed ? 'Copied' : 'Markdown'}
-                  </button>
-                </>
-              )}
             </div>
           </form>
 
@@ -425,7 +393,7 @@ export default function App() {
         </div>
 
         {((platform === 'github' && githubData) || (platform === 'leetcode' && leetcodeDataReady)) && (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-2xl p-6 sm:p-8 overflow-hidden">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-2xl p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row sm:justify-end sm:items-start sm:items-center gap-4 mb-6">
               
               <div className="flex flex-wrap items-center gap-2">
@@ -491,8 +459,8 @@ export default function App() {
             
             <div 
               ref={graphRef}
-              className={`w-full bg-black rounded-lg border border-gray-800 relative shadow-inner overflow-hidden flex items-center justify-center ${
-                platform === 'github' && viewMode === 'shooter' ? 'aspect-[86/23]' : 'p-4 min-h-[550px]'
+              className={`w-full bg-black rounded-lg border border-gray-800 relative shadow-inner flex items-center justify-center ${
+                platform === 'github' && viewMode === 'shooter' ? 'aspect-[86/23] overflow-hidden' : 'p-4 min-h-[650px]'
               }`}
             >
               {platform === 'github' ? (

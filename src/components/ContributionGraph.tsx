@@ -40,14 +40,22 @@ export function ContributionGraph({ data, theme = 'github', font = 'inter', hide
 const containerRef = React.useRef<HTMLDivElement>(null);
   const contentRef = React.useRef<HTMLDivElement>(null);
   const [scale, setScale] = React.useState(1);
-  const [containerHeight, setContainerHeight] = React.useState<number | undefined>(undefined);
+  const weekCount = data.weeks.length;
+  const computedWidth = weekCount * 12 + Math.max(0, weekCount - 1) * 3 + 34;
+  const maxDays = Math.max(...data.weeks.map(w => w.days.length), 1);
+  const computedHeight =
+    44 + // title block: text-lg line-height (28) + mb-4 (16)
+    (maxDays * 12 + Math.max(0, maxDays - 1) * 3 + 34) + // grid rows (12px cells + 3px gaps) + p-4 padding (32) + border (2)
+    32; // date row: mt-3 (12) + text-sm line-height (20)
+
+  const [containerHeight, setContainerHeight] = React.useState<number | undefined>(computedHeight);
 
   React.useEffect(() => {
     const updateSize = () => {
       if (!containerRef.current || !contentRef.current) return;
       const width = containerRef.current.getBoundingClientRect().width;
-      if (width < 840) {
-        const newScale = width / 840;
+      if (width < computedWidth) {
+        const newScale = width / computedWidth;
         setScale(newScale);
         setContainerHeight(contentRef.current.offsetHeight * newScale + 10);
       } else {
@@ -76,7 +84,7 @@ const containerRef = React.useRef<HTMLDivElement>(null);
 
   return (
     <div 
-      className={`w-full flex flex-col items-center justify-center min-h-[550px] p-8 rounded-lg ${!hideBorder ? 'border border-gray-800' : ''}`}
+      className={`w-full flex flex-col items-center justify-center min-h-[800px] pb-8 pl-8 pr-8 rounded-lg border ${!hideBorder ? 'border-gray-800' : 'border-transparent'}`}
       style={{ backgroundColor: currentTheme.bg, fontFamily }}
 
     >
@@ -198,8 +206,8 @@ const containerRef = React.useRef<HTMLDivElement>(null);
       )}
 
       {/* Heatmap Section */}
-      <div className="w-full max-w-[840px] flex justify-center overflow-hidden" ref={containerRef} style={{ height: containerHeight }}>
-        <div ref={contentRef} style={{ transform: `scale(${scale})`, transformOrigin: 'top center', width: '840px', minWidth: '840px', flexShrink: 0 }}>
+      <div className="w-full flex justify-center" ref={containerRef} style={{ maxWidth: `${computedWidth}px`, maxHeight: containerHeight }}>
+        <div ref={contentRef} style={{ transform: `scale(${scale})`, transformOrigin: 'top center', width: `${computedWidth}px`, minWidth: `${computedWidth}px`, flexShrink: 0 }}>
           <div className="text-lg mb-4" style={{ color: primaryColor }}>
             Heatmap (Last 52 Weeks)
           </div>
@@ -220,8 +228,8 @@ const containerRef = React.useRef<HTMLDivElement>(null);
           </div>
 
           <div className="flex justify-between mt-3 text-sm " style={{ color: primaryColor }}>
-            <span>{data.weeks[0]?.days[0]?.date.replace(/-/g, '.')}</span>
-            <span>{data.weeks[data.weeks.length - 1]?.days[data.weeks[data.weeks.length - 1]?.days.length - 1]?.date.replace(/-/g, '.')}</span>
+            <span>{data.weeks[0]?.days[0]?.date?.replace(/-/g, '.')}</span>
+            <span>{data.weeks[data.weeks.length - 1]?.days[data.weeks[data.weeks.length - 1]?.days.length - 1]?.date?.replace(/-/g, '.')}</span>
           </div>
         </div>
       </div>

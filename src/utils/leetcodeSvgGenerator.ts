@@ -47,14 +47,12 @@ export function generateLeetcodeSvg(
 
   // Dimensions
   const padding = 48;
-  const cardWidth = 850;
-  
   const cellSize = 12;
   const gap = 3;
   const heatmapWidth = (weeks.length * cellSize) + ((weeks.length - 1) * gap);
   const heatmapHeight = (7 * cellSize) + (6 * gap);
-
-  const cardHeight = 650; // Approximating HTML layout height
+  
+  const cardWidth = heatmapWidth + (padding * 2);
 
   const fontFamilies: Record<string, string> = {
     'inter': '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
@@ -71,17 +69,29 @@ export function generateLeetcodeSvg(
   const fontImport = FONTS_CSS;
 
   let heatmapSvg = '';
-  weeks.forEach((week, weekIndex) => {
-    const x = weekIndex * (cellSize + gap);
-    week.days.forEach((day: any, dayIndex: number) => {
-      const y = dayIndex * (cellSize + gap);
-      const fill = day.count > 0 ? (theme.levels[day.level] || primaryColor) : (theme.levels[0] || '#161b22');
-      heatmapSvg += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="2" ry="2" fill="${fill}" />`;
-    });
+  const allDays = weeks.flatMap((w: any) => w.days);
+  allDays.forEach((day: any, index: number) => {
+    const col = Math.floor(index / 7);
+    const row = index % 7;
+    const x = col * (cellSize + gap);
+    const y = row * (cellSize + gap);
+    const fill = day.count > 0 ? (theme.levels[day.level] || primaryColor) : (theme.levels[0] || '#161b22');
+    heatmapSvg += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="2" ry="2" fill="${fill}" />`;
   });
 
   const startDate = weeks[0]?.days[0]?.date?.replace(/-/g, '.') || '';
   const endDate = weeks[weeks.length - 1]?.days[weeks[weeks.length - 1]?.days.length - 1]?.date?.replace(/-/g, '.') || '';
+
+  // Match GitHub SVG styling and spacing exactly
+  const statsSectionBottom = 120 + 160; // ring's translate-y (120) + its full extent (~160)
+  const dividerMarginTop = 30;
+  const dividerY = statsSectionBottom + dividerMarginTop;
+  const heatmapTitleMarginTop = 30;
+  const heatmapTitleY = dividerY + 1 + heatmapTitleMarginTop;
+  const heatmapY = heatmapTitleY + 44;
+  const heatmapDatesY = heatmapY + heatmapHeight + 30;
+  const cardHeight = heatmapDatesY + padding;
+  const heatmapXOffset = Math.max(padding, cardWidth / 2 - heatmapWidth / 2);
 
   const svg = `
 <svg xmlns="http://www.w3.org/2000/svg" width="${cardWidth}" height="${cardHeight}" viewBox="0 0 ${cardWidth} ${cardHeight}">
@@ -132,6 +142,9 @@ export function generateLeetcodeSvg(
       <text x="80" y="95" fill="${titleColor}" font-size="48" font-weight="bold" text-anchor="middle" letter-spacing="-1">${totalSolved}</text>
     </g>
 
+    <!-- Vertical Divider -->
+    <rect x="200" y="5" width="1" height="150" fill="#1f2937" class="fade-in delay-1" />
+
     <!-- Difficulty Bars -->
     <g transform="translate(240, 20)">
       <!-- Easy -->
@@ -161,20 +174,23 @@ export function generateLeetcodeSvg(
   </g>
 
   <!-- Divider -->
-  <rect x="25" y="340" width="800" height="1" fill="${borderColor}" class="fade-in delay-2" />
+  <rect x="${padding}" y="${dividerY}" width="${cardWidth - (padding * 2)}" height="1" fill="#1f2937" class="fade-in delay-2" />
+
+  <!-- Heatmap Title -->
+  <g transform="translate(${heatmapXOffset}, ${heatmapTitleY})" class="fade-in delay-3">
+    <text x="0" y="20" fill="${primaryColor}" font-size="16" font-weight="500">Heatmap (Last 52 Weeks)</text>
+  </g>
 
   <!-- Heatmap -->
-  <g transform="translate(${cardWidth / 2 - heatmapWidth / 2}, 380)" class="fade-in delay-3">
-    <text x="0" y="-16" fill="${primaryColor}" font-size="18">Heatmap (Last 52 Weeks)</text>
-    
-    <rect x="-16" y="-4" width="${heatmapWidth + 32}" height="${heatmapHeight + 32}" rx="12" ry="12" fill="${theme.bg}" stroke="${borderColor}" stroke-width="1" />
-    
-    <g transform="translate(0, 12)">
-      ${heatmapSvg}
-    </g>
+  <g transform="translate(${heatmapXOffset}, ${heatmapY})" class="fade-in delay-3">
+    <rect x="-8" y="-8" width="${heatmapWidth + 16}" height="${heatmapHeight + 16}" fill="#0A0A0A" rx="8" stroke="#162413" stroke-width="1" />
+    ${heatmapSvg}
+  </g>
 
-    <text x="0" y="${heatmapHeight + 48}" fill="${primaryColor}" font-size="14">${startDate}</text>
-    <text x="${heatmapWidth}" y="${heatmapHeight + 48}" fill="${primaryColor}" font-size="14" text-anchor="end">${endDate}</text>
+  <!-- Heatmap Dates -->
+  <g transform="translate(${heatmapXOffset}, ${heatmapY + heatmapHeight + 30})" class="fade-in delay-3">
+    <text x="0" y="0" fill="${primaryColor}" font-size="12">${startDate}</text>
+    <text x="${heatmapWidth}" y="0" fill="${primaryColor}" font-size="12" text-anchor="end">${endDate}</text>
   </g>
 </svg>
   `;

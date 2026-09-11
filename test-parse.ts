@@ -1,0 +1,1 @@
+import { parseSubmissionCalendar } from './src/utils/leetcode.ts'; const w = parseSubmissionCalendar('{}'); console.log('Number of weeks:', w.length); console.log('Days in first few weeks:', w.slice(0,3).map(x => x.days.length));

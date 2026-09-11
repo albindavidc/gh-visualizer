@@ -1,0 +1,1 @@
+import { generateSvg } from './src/utils/svgGenerator.ts'; console.log(generateSvg('test', 100, [{days: [{level:1},{level:2},{level:3},{level:4},{level:1},{level:1},{level:1}]}], 'github', [], 'inter', false, false, '2020').substring(0, 1000));

@@ -1,10 +1,18 @@
 import { Day, Week } from "./streaks.js";
 
 export function parseSubmissionCalendar(calendarStr: string | undefined): Week[] {
-  let cal: Record<string, number> = {};
+  let rawCal: Record<string, number> = {};
   try {
-    cal = JSON.parse(calendarStr || "{}");
+    rawCal = JSON.parse(calendarStr || "{}");
   } catch (e) { }
+
+  // Map exact UNIX timestamps to YYYY-MM-DD
+  const cal: Record<string, number> = {};
+  for (const [ts, count] of Object.entries(rawCal)) {
+    // LeetCode's timestamps are usually UTC midnights
+    const dateStr = new Date(parseInt(ts) * 1000).toISOString().split('T')[0];
+    cal[dateStr] = count;
+  }
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -23,10 +31,14 @@ export function parseSubmissionCalendar(calendarStr: string | undefined): Week[]
 
   for (let i = 0; i < numDays; i++) {
     const d = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
-    const dateStr = d.toISOString().split("T")[0];
-    const timestamp = Math.floor(d.getTime() / 1000).toString();
+    
+    // Format local date as YYYY-MM-DD
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
 
-    const count = cal[timestamp] || 0;
+    const count = cal[dateStr] || 0;
     
     // Determine level (0-4) based on count
     let level = 0;

@@ -206,23 +206,14 @@ export function generateSvg(username: string, totalContributions: number, weeks:
       <rect x="-8" y="-8" width="${heatmapWidth + 16}" height="${heatmapHeight + 16}" fill="#0A0A0A" rx="8" stroke="#162413" stroke-width="1" />
 `;
 
-  weeks.forEach((week: any, weekIndex: number) => {
-    week.days.forEach((day: any, dayIndex: number) => {
-      // SVG generator expects { date, count, level, weekday }
-      // Our streaks utility gives us everything we need, but we need weekday for Y pos
-      // Since it's a 7-day week array, we can just use the dayIndex (0 = Sunday, 6 = Saturday)
-      // Note: The GraphQL API groups them from Sunday to Saturday.
-      const color = theme.levels[day.level] || theme.levels[4];
-      const x = weekIndex * (cellSize + gap);
-      
-      // We need proper Y calculation. In `api/graph.ts` previously it was `day.weekday`.
-      // The `server.ts` data processing maps from `contributionDays` where `weekday` wasn't explicitly passed in `server.ts` mapping.
-      // Wait, let's fix the GraphQL query to fetch `weekday` and map it, or just rely on `dayIndex`.
-      // Actually `dayIndex` corresponds to the position in the week.
-      const finalY = day.weekday !== undefined ? day.weekday * (cellSize + gap) : dayIndex * (cellSize + gap);
-
-      svg += `<rect x="${x}" y="${finalY}" width="${cellSize}" height="${cellSize}" fill="${color}" rx="2" />`;
-    });
+  const allDays = weeks.flatMap((w: any) => w.days);
+  allDays.forEach((day: any, index: number) => {
+    const col = Math.floor(index / 7);
+    const row = index % 7;
+    const color = theme.levels[day.level] || theme.levels[4];
+    const x = col * (cellSize + gap);
+    const y = row * (cellSize + gap);
+    svg += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" fill="${color}" rx="2" />`;
   });
 
   

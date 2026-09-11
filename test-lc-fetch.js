@@ -1,0 +1,1 @@
+fetch("http://localhost:3000/api/leetcode-data?username=jacoblincool").then(r=>r.json()).then(d=> { const w = require("./src/utils/leetcode.ts").parseSubmissionCalendar(d.submissionCalendar); console.log(JSON.stringify(w[0].days)); }).catch(console.error)
